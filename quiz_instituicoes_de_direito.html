@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz · Instituições de Direito</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0f0f;
+    --paper: #ffffff;
+    --accent: #d4420a;
+    --accent2: #1a56a0;
+    --muted: #6b7280;
+    --surface: #f7f6f3;
+    --border: #e5e0d8;
+    --easy: #16a34a;
+    --med: #d97706;
+    --hard: #dc2626;
+    --correct: #15803d;
+    --wrong: #dc2626;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 32px 24px 24px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 20px,
+      rgba(255,255,255,.03) 20px, rgba(255,255,255,.03) 40px
+    );
+  }
+  .header-eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(26px, 5vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+    position: relative;
+  }
+  .header-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    margin-top: 8px;
+    position: relative;
+  }
+  .header-topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    position: relative;
+  }
+  .topic-chip {
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 99px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,.8);
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  .control-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 500; }
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--border);
+    background: var(--paper);
+    border-radius: 99px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all .18s;
+    color: var(--ink);
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .start-btn {
+    padding: 10px 28px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .5px;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .start-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,66,10,.35); }
+  .start-btn:active { transform: translateY(0); }
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap {
+    padding: 0 24px;
+    max-width: 760px;
+    margin: 20px auto 0;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 99px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ── MAIN ── */
+  #quiz-area {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 24px 60px;
+  }
+
+  /* ── QUESTION CARD ── */
+  .q-card {
+    background: var(--paper);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 20px;
+    animation: slideUp .3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .q-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .badge-easy   { background: #dcfce7; color: var(--easy); }
+  .badge-medium { background: #fef3c7; color: var(--med); }
+  .badge-hard   { background: #fee2e2; color: var(--hard); }
+  .badge-topic  { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
+  .q-num { font-size: 12px; color: var(--muted); margin-left: auto; }
+  .q-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  /* ── OPTIONS ── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    transition: border-color .15s, background .15s, transform .1s;
+    color: var(--ink);
+    width: 100%;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    background: #eff6ff;
+    transform: translateX(3px);
+  }
+  .opt-btn:disabled { cursor: default; }
+  .opt-letter {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background .15s, color .15s;
+  }
+  .opt-btn.correct { border-color: var(--correct); background: #f0fdf4; }
+  .opt-btn.correct .opt-letter { background: var(--correct); color: #fff; }
+  .opt-btn.wrong   { border-color: var(--wrong);   background: #fef2f2; }
+  .opt-btn.wrong   .opt-letter { background: var(--wrong);   color: #fff; }
+
+  /* VF */
+  .vf-row { display: flex; gap: 12px; }
+  .vf-btn {
+    flex: 1;
+    padding: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all .15s;
+    color: var(--ink);
+  }
+  .vf-btn:hover:not(:disabled) { border-color: var(--accent2); background: #eff6ff; }
+  .vf-btn.correct { border-color: var(--correct); background: #f0fdf4; color: var(--correct); }
+  .vf-btn.wrong   { border-color: var(--wrong);   background: #fef2f2; color: var(--wrong);   }
+  .vf-btn:disabled { cursor: default; }
+
+  /* ── FEEDBACK ── */
+  .feedback {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    line-height: 1.55;
+    display: none;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+  .feedback.show { display: block; }
+  .feedback-correct { background: #f0fdf4; border-left: 3px solid var(--correct); color: #15803d; }
+  .feedback-wrong   { background: #fef2f2; border-left: 3px solid var(--wrong);   color: #991b1b; }
+  .feedback strong { font-weight: 600; }
+
+  .next-btn {
+    margin-top: 16px;
+    padding: 10px 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 99px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: none;
+    letter-spacing: .5px;
+    transition: opacity .15s;
+  }
+  .next-btn.show { display: inline-flex; align-items: center; gap: 6px; }
+  .next-btn:hover { opacity: .8; }
+
+  /* ── RESULT ── */
+  #result-screen { display: none; padding: 0 0 60px; }
+  #result-screen.show { display: block; }
+  .result-hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 48px 24px;
+    text-align: center;
+  }
+  .score-ring {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,.15);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    position: relative;
+  }
+  .score-ring::after {
+    content: '';
+    position: absolute; inset: -6px;
+    border-radius: 50%;
+    border: 3px solid var(--accent);
+    border-right-color: transparent;
+    animation: spin 1.5s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .score-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800;
+  }
+  .score-label { font-size: 12px; color: rgba(255,255,255,.5); }
+  .result-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .result-sub { color: rgba(255,255,255,.6); font-size: 14px; }
+
+  .result-body {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--border);
+  }
+
+  /* breakdown bars */
+  .breakdown-item { margin-bottom: 14px; }
+  .breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .breakdown-label { font-size: 13px; font-weight: 500; flex: 0 0 140px; }
+  .breakdown-count { font-size: 12px; color: var(--muted); margin-left: auto; white-space: nowrap; }
+  .bar-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 99px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+  }
+  .bar-fill.easy   { background: var(--easy); }
+  .bar-fill.med    { background: var(--med); }
+  .bar-fill.hard   { background: var(--hard); }
+  .bar-fill.topic  { background: var(--accent2); }
+  .warn-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* recs */
+  .rec-list { list-style: none; }
+  .rec-list li {
+    padding: 10px 14px;
+    background: #fff8f0;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  /* review */
+  .review-card {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .review-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .review-icon {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; flex-shrink: 0; margin-top: 1px;
+    font-weight: 700;
+  }
+  .review-icon.w { background: #fee2e2; color: var(--wrong); }
+  .review-q { font-size: 13px; font-weight: 500; flex: 1; line-height: 1.5; }
+  .review-body {
+    padding: 14px 16px;
+    background: var(--paper);
+    display: none;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .review-body.open { display: block; }
+  .review-answer { margin-bottom: 6px; }
+  .review-answer span { font-weight: 600; }
+  .review-expl { color: var(--muted); }
+
+  .retry-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: opacity .15s;
+  }
+  .retry-btn:hover { opacity: .85; }
+
+  /* ── EMPTY STATE ── */
+  .empty { text-align: center; padding: 60px 24px; color: var(--muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 520px) {
+    .controls { flex-direction: column; align-items: flex-start; }
+    .breakdown-label { flex: 0 0 110px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Estudo · Revisão</div>
+  <h1>Instituições de Direito</h1>
+  <p class="header-sub">Aulas 6, 7 e 8 · Prof. Vanessa Moretti</p>
+  <div class="header-topics">
+    <span class="topic-chip">⚖️ Dir. Administrativo</span>
+    <span class="topic-chip">📋 Dir. Civil</span>
+    <span class="topic-chip">🏢 Dir. Empresarial</span>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <span class="control-label">Dificuldade</span>
+    <div class="btn-row">
+      <button class="filter-btn active" data-diff="all">Todas</button>
+      <button class="filter-btn" data-diff="easy">Fácil</button>
+      <button class="filter-btn" data-diff="medium">Médio</button>
+      <button class="filter-btn" data-diff="hard">Difícil</button>
+    </div>
+  </div>
+  <div class="control-group">
+    <span class="control-label">Ordem</span>
+    <div class="btn-row">
+      <button class="filter-btn active" data-order="seq">Sequencial</button>
+      <button class="filter-btn" data-order="rand">Embaralhada</button>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">▶ Iniciar Quiz</button>
+</div>
+
+<div class="progress-bar-wrap" id="progress-wrap" style="display:none">
+  <div class="progress-info">
+    <span id="prog-text">Questão 1 de 30</span>
+    <span id="score-live">✔ 0 &nbsp;✘ 0</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<div id="quiz-area"></div>
+<div id="result-screen"></div>
+
+<script>
+const ALL_QUESTIONS = [
+  // ═══════════════ DIREITO ADMINISTRATIVO ═══════════════
+  {
+    id:1, diff:'easy', topic:'Dir. Administrativo',
+    type:'def',
+    q:'Qual é o conceito correto de Direito Administrativo?',
+    opts:[
+      'Conjunto de normas que regula a organização da Administração Pública, a atuação do Estado e a relação entre Estado e particulares.',
+      'Ramo do direito que trata exclusivamente das relações entre pessoas físicas e empresas privadas.',
+      'Conjunto de normas voltadas apenas para a punição de agentes públicos que cometem infrações.',
+      'Ramo jurídico que disciplina somente os contratos firmados entre entes federativos.'
+    ],
+    correct:0,
+    expl:'O Direito Administrativo regula a organização e atuação da Administração Pública e as relações entre Estado e particulares — como nas licitações e concessões de serviços públicos.'
+  },
+  {
+    id:2, diff:'easy', topic:'Dir. Administrativo',
+    type:'def',
+    q:'O acrônimo LIMPE reúne os princípios básicos da Administração Pública. O que cada letra representa?',
+    opts:[
+      'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência.',
+      'Licitação, Interesse público, Mérito, Prestação de contas e Equidade.',
+      'Legalidade, Imparcialidade, Moralidade, Probidade e Economicidade.',
+      'Legitimidade, Impessoalidade, Motivação, Publicidade e Eficiência.'
+    ],
+    correct:0,
+    expl:'LIMPE é o acrônimo consagrado: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência. Esses princípios estão previstos no art. 37 da CF/88.'
+  },
+  {
+    id:3, diff:'easy', topic:'Dir. Administrativo',
+    type:'def',
+    q:'O que é um ato administrativo?',
+    opts:[
+      'Manifestação de vontade da Administração Pública que produz efeitos jurídicos, como nomeação de servidores ou concessão de licenças.',
+      'Decisão tomada exclusivamente pelo Poder Legislativo para criar novas normas administrativas.',
+      'Acordo bilateral entre dois entes privados para transferência de bens ao Estado.',
+      'Documento interno sem efeito jurídico, utilizado apenas para organização da estrutura pública.'
+    ],
+    correct:0,
+    expl:'Ato administrativo é a manifestação de vontade da Administração Pública com efeitos jurídicos. Exemplos clássicos: multa, licença, nomeação de servidor.'
+  },
+  {
+    id:4, diff:'easy', topic:'Dir. Administrativo',
+    type:'def',
+    q:'Qual é a finalidade principal da licitação?',
+    opts:[
+      'Garantir igualdade entre concorrentes, transparência nas contratações e a melhor proposta para o poder público.',
+      'Permitir que o poder público escolha livremente fornecedores de sua confiança sem processo formal.',
+      'Reduzir o número de empresas que podem contratar com o governo, priorizando as de maior porte.',
+      'Exclusivamente fiscalizar o cumprimento de contratos já firmados pela Administração.'
+    ],
+    correct:0,
+    expl:'A licitação existe para evitar corrupção, garantir concorrência e buscar o melhor custo-benefício para o poder público.'
+  },
+  {
+    id:5, diff:'easy', topic:'Dir. Administrativo',
+    type:'def',
+    q:'Qual modalidade de licitação é indicada para a compra de bens e serviços comuns, sendo a mais utilizada na prática?',
+    opts:[
+      'Pregão, adequado para aquisição de bens e serviços com padrões de desempenho e qualidade objetivamente definidos.',
+      'Concorrência, destinada a contratos de grande porte e ampla participação de licitantes.',
+      'Tomada de Preços, voltada para empresas previamente cadastradas em registros cadastrais.',
+      'Dispensa de Licitação, aplicada quando a lei permite contratar sem procedimento competitivo.'
+    ],
+    correct:0,
+    expl:'O Pregão é a modalidade mais utilizada; serve para bens e serviços comuns (materiais, alimentos, equipamentos) e pode ocorrer de forma presencial ou eletrônica.'
+  },
+  // ─── médio admin ───
+  {
+    id:6, diff:'medium', topic:'Dir. Administrativo',
+    type:'diff',
+    q:'Qual é a diferença entre ato administrativo VINCULADO e ato DISCRICIONÁRIO?',
+    opts:[
+      'No vinculado não há margem de escolha — cumpridos os requisitos legais, o agente deve praticar o ato. No discricionário, a lei concede certa liberdade de decisão.',
+      'O vinculado exige aprovação do Judiciário antes de ser praticado; o discricionário é praticado sem qualquer controle.',
+      'Ambos concedem liberdade de escolha ao agente, diferenciando-se apenas pelo valor do contrato envolvido.',
+      'O discricionário exige motivação expressa e o vinculado pode ser praticado sem qualquer fundamentação.'
+    ],
+    correct:0,
+    expl:'Ato vinculado: concessão de aposentadoria ao preencher os requisitos. Ato discricionário: escolha do local para construir uma escola, onde o gestor pondera conveniência e oportunidade.'
+  },
+  {
+    id:7, diff:'medium', topic:'Dir. Administrativo',
+    type:'sit',
+    q:'Um prefeito contrata diretamente uma empresa amiga para obras na cidade, sem abrir processo licitatório e sem nenhuma justificativa legal. Qual princípio da LIMPE foi diretamente violado?',
+    opts:[
+      'Impessoalidade, pois a decisão beneficiou um particular em detrimento do interesse público e da igualdade entre concorrentes.',
+      'Eficiência, pois a contratação sem concorrência implica necessariamente maior custo para o erário.',
+      'Publicidade, pois o contrato não foi divulgado no Diário Oficial antes de ser firmado.',
+      'Legalidade, pois gestores públicos têm ampla liberdade para contratar desde que haja motivação política.'
+    ],
+    correct:0,
+    expl:'A impessoalidade exige que as decisões atendam ao interesse público sem favorecimentos. Também há violação da Legalidade (não seguiu o rito obrigatório), mas o favorecimento direto caracteriza, principalmente, impessoalidade.'
+  },
+  {
+    id:8, diff:'medium', topic:'Dir. Administrativo',
+    type:'sit',
+    q:'Uma prefeitura precisa contratar urgentemente uma empresa especializada para conter um surto epidêmico. Qual forma de contratação pode ser aplicada?',
+    opts:[
+      'Dispensa de Licitação, prevista em lei para situações emergenciais que não admitem demora no processo competitivo.',
+      'Pregão eletrônico, pois é a modalidade mais ágil e deve ser usada em qualquer emergência pública.',
+      'Inexigibilidade de Licitação, aplicável sempre que houver urgência, independentemente de haver concorrentes.',
+      'Concorrência simplificada, que permite prazos reduzidos para obras de interesse coletivo urgente.'
+    ],
+    correct:0,
+    expl:'A Dispensa de Licitação é cabível em emergências (art. 75, VIII da Lei 14.133/21). A Inexigibilidade se aplica quando a competição é inviável (ex.: artista exclusivo), não à urgência.'
+  },
+  {
+    id:9, diff:'medium', topic:'Dir. Administrativo',
+    type:'diff',
+    q:'Qual é a diferença entre Dispensa e Inexigibilidade de Licitação?',
+    opts:[
+      'Na Dispensa, a competição seria possível, mas a lei autoriza contratar diretamente. Na Inexigibilidade, a competição é inviável por natureza (ex.: fornecedor exclusivo).',
+      'Ambas têm o mesmo significado e podem ser usadas de forma indistinta pelo gestor público.',
+      'A Dispensa ocorre apenas em contratos de alto valor; a Inexigibilidade, apenas em contratos de baixo valor.',
+      'Na Inexigibilidade, há competição, mas ela é dispensada por razões de conveniência administrativa.'
+    ],
+    correct:0,
+    expl:'Dispensa: há viabilidade de competição, mas a lei permite prescindir dela (emergência, pequeno valor). Inexigibilidade: competição é logicamente impossível (artista exclusivo, especialista único).'
+  },
+  {
+    id:10, diff:'medium', topic:'Dir. Administrativo',
+    type:'sit',
+    q:'Qual elemento do ato administrativo é a RAZÃO DE FATO E DE DIREITO que justifica sua prática?',
+    opts:[
+      'Motivo — é a situação que fundamenta o ato, como a infração comprovada que justifica a aplicação de uma multa.',
+      'Objeto — é o efeito produzido pelo ato, ou seja, o resultado jurídico que se pretende alcançar.',
+      'Competência — é a autoridade legal conferida ao agente para praticar determinados atos.',
+      'Finalidade — é o fim de interesse público que todo ato deve obrigatoriamente perseguir.'
+    ],
+    correct:0,
+    expl:'O MOTIVO é o pressuposto de fato e de direito que autoriza ou exige a prática do ato. A teoria dos motivos determinantes determina que, se o motivo for falso, o ato é inválido.'
+  },
+  // ─── difícil admin ───
+  {
+    id:11, diff:'hard', topic:'Dir. Administrativo',
+    type:'just',
+    q:'Um agente público aplica uma multa de trânsito. Para que esse ato seja válido, quais elementos precisam estar presentes SIMULTANEAMENTE?',
+    opts:[
+      'Competência (agente autorizado), Finalidade (interesse público), Forma (escrita prevista em lei), Motivo (infração comprovada) e Objeto (penalidade cabível).',
+      'Apenas competência e motivação são exigidos; forma e objeto são dispensáveis em atos punitivos de baixo impacto.',
+      'Bastam competência e objeto; os demais elementos (motivo, forma, finalidade) são verificados apenas em atos discricionários.',
+      'Competência e publicidade são suficientes, pois a finalidade pública é sempre presumida nos atos punitivos.'
+    ],
+    correct:0,
+    expl:'Os 5 elementos do ato administrativo (COMFI: Competência, Objeto, Motivo, Finalidade, Forma) devem estar presentes simultaneamente. A ausência de qualquer um torna o ato inválido.'
+  },
+  {
+    id:12, diff:'hard', topic:'Dir. Administrativo',
+    type:'just',
+    q:'[PEGADINHA] "O princípio da Eficiência, previsto na LIMPE, autoriza o gestor a descumprir a lei quando isso resultar em maior economia para o erário." Essa afirmação é:',
+    opts:[
+      'Falsa. A Eficiência não pode sobrepor-se à Legalidade; o gestor deve buscar resultados com qualidade e economia, mas sempre dentro dos limites legais.',
+      'Verdadeira. Em situações de comprovada economia, a jurisprudência consolidou a prevalência da Eficiência sobre a Legalidade.',
+      'Verdadeira, mas apenas para contratos com valor inferior ao limite de dispensa de licitação.',
+      'Falsa, pois a Eficiência se aplica somente à execução orçamentária, não a atos administrativos em geral.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! Os princípios da LIMPE são hierarquicamente equivalentes, mas a Legalidade é a base do sistema. Não há autorização para descumprir a lei em nome da eficiência — isso caracterizaria ilegalidade administrativa.'
+  },
+  {
+    id:13, diff:'hard', topic:'Dir. Administrativo',
+    type:'just',
+    q:'[PEGADINHA] Sobre a Inexigibilidade de Licitação, é correto afirmar que ela se aplica:',
+    opts:[
+      'Quando é inviável a competição, como na contratação de artista com exclusividade comprovada ou de especialista de notória especialização.',
+      'Quando o contrato tem pequeno valor, dispensando o rigor do processo licitatório por questão de economicidade.',
+      'Quando há urgência comprovada, permitindo ao gestor contratar qualquer empresa disponível de imediato.',
+      'Quando o poder público já possui cadastro do fornecedor na Junta Comercial, tornando dispensável nova licitação.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! Inexigibilidade ≠ urgência ≠ pequeno valor. Ela pressupõe inviabilidade de competição. Urgência e pequeno valor fundamentam a DISPENSA. Confundir os dois é o erro mais cobrado em provas.'
+  },
+  // ═══════════════ DIREITO CIVIL ═══════════════
+  {
+    id:14, diff:'easy', topic:'Dir. Civil',
+    type:'def',
+    q:'Quando se inicia e quando termina a personalidade jurídica da pessoa natural, conforme o Código Civil?',
+    opts:[
+      'Inicia com o nascimento com vida e termina com a morte, embora a lei coloque o nascituro a salvo desde a concepção.',
+      'Inicia com o registro civil de nascimento e termina com a baixa do CPF no sistema federal.',
+      'Inicia na concepção e termina com a declaração judicial de ausência ou morte presumida.',
+      'Inicia com o nascimento e termina somente com o trânsito em julgado da certidão de óbito.'
+    ],
+    correct:0,
+    expl:'Art. 2º do CC: a personalidade civil começa com o nascimento com vida, mas a lei coloca a salvo os direitos do nascituro desde a concepção. Termina com a morte.'
+  },
+  {
+    id:15, diff:'easy', topic:'Dir. Civil',
+    type:'def',
+    q:'Quem é considerado absolutamente incapaz pelo Código Civil vigente?',
+    opts:[
+      'Os menores de 16 anos, que devem ser representados por seus responsáveis legais.',
+      'Os menores de 18 anos e maiores de 16, que devem ser assistidos em todos os atos da vida civil.',
+      'Os maiores de 70 anos com comprometimento cognitivo grave, conforme laudo médico.',
+      'Qualquer pessoa que não saiba ler ou escrever, por impossibilidade de manifestar vontade consciente.'
+    ],
+    correct:0,
+    expl:'Após a reforma do CC pela Lei 13.146/15 (Estatuto da Pessoa com Deficiência), apenas os menores de 16 anos são absolutamente incapazes. Devem ser REPRESENTADOS.'
+  },
+  {
+    id:16, diff:'easy', topic:'Dir. Civil',
+    type:'def',
+    q:'O que é negócio jurídico?',
+    opts:[
+      'Manifestação de vontade com a finalidade de criar, modificar ou extinguir direitos, sendo a base das relações contratuais.',
+      'Qualquer fato da natureza que produza consequências previstas no ordenamento jurídico.',
+      'Ato exclusivo de pessoas jurídicas voltado à prática de operações comerciais com fins lucrativos.',
+      'Documento formal exigido por lei para constituição de sociedades empresárias no Brasil.'
+    ],
+    correct:0,
+    expl:'Negócio jurídico é a declaração de vontade destinada a produzir efeitos jurídicos desejados pelas partes. Tem 3 requisitos: agente capaz, objeto lícito e forma prevista/não proibida em lei (art. 104, CC).'
+  },
+  {
+    id:17, diff:'easy', topic:'Dir. Civil',
+    type:'def',
+    q:'Qual é a diferença básica entre ERRO e DOLO como defeitos do negócio jurídico?',
+    opts:[
+      'O erro é falsa percepção da realidade sem interferência alheia; o dolo é a indução intencional ao erro por outra parte.',
+      'O erro é causado por terceiro mal-intencionado; o dolo é a percepção equivocada espontânea do próprio declarante.',
+      'O erro invalida o negócio apenas em contratos de alto valor; o dolo o invalida em qualquer hipótese.',
+      'São sinônimos no Direito Civil, diferindo apenas na denominação utilizada em cada ramo do direito.'
+    ],
+    correct:0,
+    expl:'ERRO: o próprio contratante se engana (ex.: compra produto falsificado pensando ser original). DOLO: a outra parte induz intencionalmente ao engano (ex.: fornecedor omite defeitos para fechar venda).'
+  },
+  // ─── médio civil ───
+  {
+    id:18, diff:'medium', topic:'Dir. Civil',
+    type:'diff',
+    q:'Qual é a diferença entre PESSOA NATURAL e PESSOA JURÍDICA de Direito Privado?',
+    opts:[
+      'A pessoa natural é o ser humano; a jurídica é entidade criada pela lei (sociedade, associação, fundação) com personalidade própria, distinta dos seus integrantes.',
+      'A pessoa jurídica é o indivíduo que age em nome de outro mediante procuração; a pessoa natural age sempre em nome próprio.',
+      'A distinção é apenas formal: ambas possuem patrimônio indistinguível de seus titulares para fins de responsabilidade civil.',
+      'Pessoa natural tem personalidade desde a concepção; pessoa jurídica só a adquire após 2 anos de funcionamento regular.'
+    ],
+    correct:0,
+    expl:'A pessoa jurídica tem existência autônoma ("vida própria perante a lei"), separada dos sócios, o que é essencial para a limitação de responsabilidade patrimonial nas sociedades empresárias.'
+  },
+  {
+    id:19, diff:'medium', topic:'Dir. Civil',
+    type:'diff',
+    q:'Diferencie FATO JURÍDICO NATURAL de FATO JURÍDICO HUMANO com um exemplo de cada:',
+    opts:[
+      'Natural: morte de um sócio, que desencadeia a sucessão empresarial. Humano: assinatura de um contrato, que cria obrigações entre as partes.',
+      'Natural: assinatura de contrato, pois segue normas da natureza obrigacional. Humano: nascimento, pois depende de ação médica.',
+      'Natural: inadimplemento contratual, por ser inevitável em certos contextos. Humano: terremoto que destrói um bem objeto de contrato.',
+      'Ambos decorrem da vontade humana; a diferença está apenas na forma de registro em cartório.'
+    ],
+    correct:0,
+    expl:'Fato natural independe da vontade (nascimento, morte, decurso do tempo). Fato humano decorre de ação humana consciente. Essa classificação impacta na responsabilidade civil e nos efeitos jurídicos.'
+  },
+  {
+    id:20, diff:'medium', topic:'Dir. Civil',
+    type:'sit',
+    q:'Uma empresa compra máquinas de um fornecedor que omite defeitos graves. Após a entrega, os equipamentos não funcionam. Qual defeito do negócio jurídico está presente?',
+    opts:[
+      'Dolo, pois o fornecedor induziu intencionalmente a empresa ao erro ao ocultar os defeitos para concretizar a venda.',
+      'Erro, pois a empresa agiu por falsa percepção própria, sem que o fornecedor tivesse qualquer responsabilidade.',
+      'Coação, pois a empresa foi pressionada a fechar o negócio sob risco de não obter o equipamento de outro fornecedor.',
+      'Lesão, pois o valor pago pelas máquinas foi desproporcional ao seu valor real de mercado.'
+    ],
+    correct:0,
+    expl:'Dolo: há conduta intencional do fornecedor (omissão maliciosa). Consequência: o contrato pode ser anulado (art. 145-150, CC) e o fornecedor responde por perdas e danos.'
+  },
+  {
+    id:21, diff:'medium', topic:'Dir. Civil',
+    type:'sit',
+    q:'Um empresário, para salvar sua empresa da falência, aceita taxa de juros abusivas em um contrato de empréstimo emergencial. Qual defeito do negócio jurídico está configurado?',
+    opts:[
+      'Estado de perigo, pois o empresário assumiu obrigação excessiva para se salvar de dano grave e iminente, com conhecimento da outra parte.',
+      'Coação, pois o credor exerceu pressão psicológica direta sobre o empresário para forçar a assinatura do contrato.',
+      'Lesão, pois houve desproporção entre as prestações decorrente exclusivamente da inexperiência do empresário.',
+      'Fraude contra credores, pois o empresário assumiu novas dívidas sabendo da impossibilidade de pagamento futuro.'
+    ],
+    correct:0,
+    expl:'Estado de perigo: a parte, para se salvar de dano grave, assume obrigação excessiva — e a outra parte tem ciência disso (art. 156, CC). Difere da lesão, que não exige conhecimento da contraparte.'
+  },
+  {
+    id:22, diff:'medium', topic:'Dir. Civil',
+    type:'vf',
+    q:'Verdadeiro ou Falso: Todo ato jurídico é também um negócio jurídico, pois ambos decorrem de manifestação de vontade humana com efeitos jurídicos.',
+    opts:['Verdadeiro','Falso'],
+    correct:1,
+    expl:'FALSO. O negócio jurídico é espécie do gênero ato jurídico. O ato jurídico produz efeitos previstos em lei; o negócio jurídico vai além — as partes definem os efeitos desejados. Ex.: pagamento de dívida é ato jurídico (efeitos definidos em lei), mas não negócio jurídico.'
+  },
+  // ─── difícil civil ───
+  {
+    id:23, diff:'hard', topic:'Dir. Civil',
+    type:'just',
+    q:'[PEGADINHA] "Um jovem de 17 anos pode assinar um contrato de prestação de serviços sozinho, pois o Código Civil atual considera relativamente incapazes apenas os menores de 16 anos." Analise:',
+    opts:[
+      'Incorreto. O relativamente incapaz inclui os maiores de 16 e menores de 18 anos. O jovem de 17 deve ser ASSISTIDO (não representado) por seu responsável legal.',
+      'Correto. Após a reforma do CC, qualquer pessoa acima de 16 anos possui plena capacidade de fato para todos os atos civis.',
+      'Correto parcialmente: o jovem pode assinar sozinho contratos de valor inferior a 5 salários mínimos, sendo representado nos demais.',
+      'Incorreto. O jovem de 17 anos é absolutamente incapaz e deve ser representado em qualquer ato da vida civil.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! Os relativamente incapazes (16–18 anos) devem ser ASSISTIDOS (participam do ato com o representante ao lado), não representados. Menores de 16 são absolutamente incapazes e devem ser REPRESENTADOS. A diferença é cobrada com frequência.'
+  },
+  {
+    id:24, diff:'hard', topic:'Dir. Civil',
+    type:'just',
+    q:'[PEGADINHA] "A fraude contra credores ocorre quando o devedor, sabendo-se insolvente, pratica atos que diminuem seu patrimônio em prejuízo dos credores. Para anulá-la, basta provar o prejuízo, independentemente da intenção do devedor." Essa afirmação é:',
+    opts:[
+      'Incorreta. Além do prejuízo (eventus damni), exige-se a má-fé do devedor (consilium fraudis) e, em atos onerosos, também do adquirente.',
+      'Correta. O Código Civil adota a teoria objetiva: basta o prejuízo, sem necessidade de investigar a intenção das partes.',
+      'Correta, pois a fraude contra credores é punida objetivamente para proteger o sistema de crédito empresarial.',
+      'Incorreta somente quanto a atos gratuitos; nos onerosos, basta a prova do prejuízo para anulação.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! Para anular atos fraudulentos, o CC exige: (1) eventus damni (prejuízo ao credor) + (2) consilium fraudis (intenção de fraudar). Em atos onerosos, o adquirente também deve ter ciência da insolvência (art. 158-165, CC).'
+  },
+  {
+    id:25, diff:'hard', topic:'Dir. Civil',
+    type:'just',
+    q:'Quais são os três requisitos de validade do negócio jurídico, conforme o art. 104 do Código Civil?',
+    opts:[
+      'Agente capaz; objeto lícito, possível, determinado ou determinável; e forma prescrita ou não proibida em lei.',
+      'Partes maiores de 18 anos; objeto com valor econômico; e registro em cartório de títulos e documentos.',
+      'Declaração de vontade expressa; testemunhas hábeis; e objeto com equivalência de prestações entre as partes.',
+      'Capacidade negocial; ausência de vícios de consentimento; e publicidade do ato perante terceiros.'
+    ],
+    correct:0,
+    expl:'Art. 104, CC: (1) agente capaz; (2) objeto lícito, possível, determinado ou determinável; (3) forma prescrita ou não defesa em lei. A ausência de qualquer requisito gera nulidade absoluta ou relativa conforme o vício.'
+  },
+  // ═══════════════ DIREITO EMPRESARIAL ═══════════════
+  {
+    id:26, diff:'easy', topic:'Dir. Empresarial',
+    type:'def',
+    q:'O que é Direito Empresarial e qual era sua denominação anterior?',
+    opts:[
+      'Ramo do Direito que regula o empresário e a atividade empresarial; antes era chamado de Direito Comercial, mas hoje tem alcance mais amplo.',
+      'Sinônimo de Direito Civil aplicado às relações de consumo; antes denominado Direito do Consumidor.',
+      'Conjunto de normas que regula exclusivamente as sociedades anônimas; antigamente chamado de Direito Societário.',
+      'Ramo que disciplina a relação entre empresas e o Estado; antes chamado de Direito Econômico Público.'
+    ],
+    correct:0,
+    expl:'O antigo Direito Comercial evoluiu para o Direito Empresarial, abrangendo sociedades empresárias, títulos de crédito, contratos empresariais, falência e recuperação judicial, e propriedade industrial.'
+  },
+  {
+    id:27, diff:'easy', topic:'Dir. Empresarial',
+    type:'def',
+    q:'Quais são os elementos essenciais para a constituição de uma SOCIEDADE, conforme o Direito Empresarial?',
+    opts:[
+      'Pluralidade de sócios, contribuição com capital ou trabalho, objetivo econômico e partilha de resultados.',
+      'Registro na Junta Comercial, CNPJ ativo, sede física e pelo menos dois funcionários celetistas.',
+      'Capital social mínimo de 10 salários mínimos, sócios maiores de 21 anos e objeto social lícito.',
+      'Apenas um sócio administrador, patrimônio separado e finalidade lucrativa declarada em contrato.'
+    ],
+    correct:0,
+    expl:'Sociedade pressupõe: pluralidade de sócios, affectio societatis (vontade de empreender juntos), contribuição de capital/trabalho e partilha de resultados (lucros e prejuízos).'
+  },
+  {
+    id:28, diff:'easy', topic:'Dir. Empresarial',
+    type:'def',
+    q:'O que é a personalidade jurídica de uma sociedade empresária e como ela é adquirida?',
+    opts:[
+      'É a existência jurídica autônoma da empresa, separada dos sócios, adquirida com o registro na Junta Comercial ou Cartório competente.',
+      'É o conjunto de direitos dos sócios, adquirida automaticamente ao pagar o capital social previsto no contrato.',
+      'É a capacidade da empresa de emitir notas fiscais, adquirida ao obter o CNPJ na Receita Federal.',
+      'É a autonomia financeira da empresa, garantida após dois anos de atividade comprovada e balanços positivos.'
+    ],
+    correct:0,
+    expl:'O REGISTRO é o ato que confere personalidade jurídica. Com ela, a empresa pode contratar, processar e ser processada, e possui patrimônio próprio distinto do patrimônio pessoal dos sócios.'
+  },
+  // ─── médio empresarial ───
+  {
+    id:29, diff:'medium', topic:'Dir. Empresarial',
+    type:'diff',
+    q:'Qual é a principal diferença entre sociedade NÃO PERSONIFICADA e sociedade PERSONIFICADA?',
+    opts:[
+      'A não personificada não tem registro e os sócios respondem pessoalmente pelas dívidas; a personificada tem registro, personalidade jurídica própria e proteção patrimonial dos sócios.',
+      'A não personificada atua apenas no mercado informal; a personificada pode contratar apenas com o poder público.',
+      'A não personificada tem responsabilidade limitada ao capital social; a personificada tem responsabilidade ilimitada.',
+      'São subtipos da mesma categoria: ambas possuem personalidade jurídica, diferindo apenas no tipo de registro exigido.'
+    ],
+    correct:0,
+    expl:'Sem registro: os sócios respondem pessoalmente (patrimônio pessoal em risco). Com registro: nasce a pessoa jurídica autônoma, separando patrimônio empresarial do pessoal.'
+  },
+  {
+    id:30, diff:'medium', topic:'Dir. Empresarial',
+    type:'diff',
+    q:'Na Sociedade em Comandita Simples, quais são os dois tipos de sócios e suas responsabilidades?',
+    opts:[
+      'Comanditados: administram e têm responsabilidade ilimitada. Comanditários: apenas investem capital e têm responsabilidade limitada ao valor aportado.',
+      'Comanditados: apenas investem e têm responsabilidade limitada. Comanditários: administram e têm responsabilidade ilimitada.',
+      'Ambos os tipos administram, mas os comanditados respondem pelo capital social e os comanditários pelo patrimônio pessoal.',
+      'Comanditados e comanditários têm a mesma responsabilidade ilimitada, diferindo apenas nas quotas de participação.'
+    ],
+    correct:0,
+    expl:'Mnemônico: Comanditado = Co-administrador (gestão + risco ilimitado). Comanditário = Capital investido (só dinheiro, responsabilidade limitada). PEGADINHA CLÁSSICA: inverter os dois tipos.'
+  },
+  {
+    id:31, diff:'medium', topic:'Dir. Empresarial',
+    type:'sit',
+    q:'Dois sócios começam a vender produtos sem formalizar a empresa. Acumulam dívidas com fornecedores. O que acontece com o patrimônio pessoal dos sócios?',
+    opts:[
+      'O patrimônio pessoal dos sócios pode ser atingido diretamente, pois sem registro não há personalidade jurídica que separe os patrimônios.',
+      'O patrimônio pessoal é sempre protegido, independentemente do registro, pelo princípio da separação patrimonial.',
+      'Apenas o sócio com maior participação responde pessoalmente; o minoritário está protegido em qualquer caso.',
+      'Os fornecedores só podem cobrar da empresa; a ausência de registro não implica responsabilidade pessoal dos sócios.'
+    ],
+    correct:0,
+    expl:'Sociedade em comum (sem registro) = sócios respondem solidária e ilimitadamente com o patrimônio pessoal. "O risco sai da empresa e vai direto para o bolso do sócio."'
+  },
+  {
+    id:32, diff:'medium', topic:'Dir. Empresarial',
+    type:'sit',
+    q:'Por que a Sociedade Limitada (LTDA) é o modelo mais utilizado pelas pequenas e médias empresas no Brasil?',
+    opts:[
+      'Porque oferece responsabilidade limitada ao capital social integralizado, protegendo o patrimônio pessoal dos sócios de dívidas empresariais.',
+      'Porque dispensa o registro em Junta Comercial e permite operar com maior informalidade e flexibilidade operacional.',
+      'Porque permite que pessoas jurídicas estrangeiras sejam sócias sem qualquer restrição regulatória.',
+      'Porque os sócios respondem ilimitadamente, o que aumenta a credibilidade junto a credores e bancos.'
+    ],
+    correct:0,
+    expl:'Na LTDA, cada sócio responde apenas até o limite de sua quota integralizada. O patrimônio pessoal só é atingido em casos excepcionais (desconsideração da personalidade jurídica).'
+  },
+  // ─── difícil empresarial ───
+  {
+    id:33, diff:'hard', topic:'Dir. Empresarial',
+    type:'just',
+    q:'[PEGADINHA] "Na Sociedade em Nome Coletivo, qualquer tipo de pessoa — física ou jurídica — pode ser sócia, pois o Código Civil não faz distinção." Essa afirmação é:',
+    opts:[
+      'Falsa. Na Sociedade em Nome Coletivo, SOMENTE pessoas físicas podem ser sócias; pessoas jurídicas são vedadas por lei.',
+      'Verdadeira. O CC não restringe o tipo de sócio, permitindo tanto pessoas físicas quanto jurídicas nesse modelo.',
+      'Verdadeira, mas com restrição: pessoas jurídicas podem ser sócias, desde que não excedam 50% do capital social.',
+      'Falsa apenas para sociedades estrangeiras; empresas brasileiras podem ser sócias na Sociedade em Nome Coletivo.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! A Sociedade em Nome Coletivo admite EXCLUSIVAMENTE pessoas físicas como sócias (art. 1.039, CC). Todos os sócios respondem ilimitada e solidariamente pelas dívidas — por isso é pouco utilizada.'
+  },
+  {
+    id:34, diff:'hard', topic:'Dir. Empresarial',
+    type:'just',
+    q:'Compare os três tipos societários estudados (Nome Coletivo, Comandita Simples e Limitada) quanto à responsabilidade dos sócios:',
+    opts:[
+      'Nome Coletivo: ilimitada para todos os sócios. Comandita Simples: ilimitada para comanditados, limitada para comanditários. Limitada: limitada ao capital social para todos os sócios.',
+      'Nome Coletivo: limitada ao capital. Comandita Simples: ilimitada para todos. Limitada: mista conforme participação.',
+      'Nome Coletivo e Comandita Simples: ambas com responsabilidade limitada. Limitada: ilimitada, mas restrita ao patrimônio da empresa.',
+      'Nome Coletivo: ilimitada. Comandita Simples: limitada para todos. Limitada: ilimitada com proteção ao patrimônio pessoal.'
+    ],
+    correct:0,
+    expl:'Resumo: Nome Coletivo → todos ilimitados (maior risco). Comandita Simples → mista (comanditado ilimitado; comanditário limitado). LTDA → todos limitados (maior proteção). Essa tabela é frequentemente cobrada em provas.'
+  },
+  {
+    id:35, diff:'hard', topic:'Dir. Empresarial',
+    type:'just',
+    q:'[PEGADINHA] "O registro na Junta Comercial tem natureza meramente burocrática e não altera os direitos e obrigações dos sócios perante terceiros." Analise essa afirmação:',
+    opts:[
+      'Falsa. O registro tem natureza constitutiva: é ele que cria a personalidade jurídica, separando o patrimônio da empresa do dos sócios e alterando fundamentalmente a responsabilidade perante credores.',
+      'Verdadeira. O registro é apenas declaratório e formaliza uma situação já existente desde o início das atividades.',
+      'Verdadeira, pois os sócios já respondem de forma limitada desde que contribuam com o capital inicial acordado.',
+      'Falsa apenas quanto aos contratos com o poder público, nos quais o registro é indispensável para a participação em licitações.'
+    ],
+    correct:0,
+    expl:'PEGADINHA! O registro tem efeito CONSTITUTIVO — não é mera formalidade. Sem registro: sociedade em comum, responsabilidade pessoal ilimitada. Com registro: personalidade jurídica própria, separação patrimonial, limitação de responsabilidade. A diferença é fundamental e frequentemente explorada em questões.'
+  }
+];
+
+// ─────────── STATE ───────────
+let state = {
+  diff: 'all',
+  order: 'seq',
+  questions: [],
+  idx: 0,
+  answers: [],    // {qi, chosen, correct}
+  score: 0,
+  started: false
+};
+
+// ─────────── FILTER BUTTONS ───────────
+document.querySelectorAll('[data-diff]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-diff]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.diff = btn.dataset.diff;
+  });
+});
+document.querySelectorAll('[data-order]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-order]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.order = btn.dataset.order;
+  });
+});
+
+// ─────────── START ───────────
+function startQuiz() {
+  let qs = ALL_QUESTIONS.filter(q => state.diff === 'all' || q.diff === state.diff);
+  if (!qs.length) { alert('Nenhuma questão para o filtro selecionado.'); return; }
+  if (state.order === 'rand') qs = shuffle([...qs]);
+  state.questions = qs;
+  state.idx = 0;
+  state.answers = [];
+  state.score = 0;
+  state.started = true;
+
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('progress-wrap').style.display = 'block';
+  renderQuestion();
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ─────────── RENDER QUESTION ───────────
+function renderQuestion() {
+  const q = state.questions[state.idx];
+  const total = state.questions.length;
+  const pct = (state.idx / total) * 100;
+
+  document.getElementById('prog-text').textContent = `Questão ${state.idx + 1} de ${total}`;
+  document.getElementById('score-live').innerHTML = `✔ ${state.score} &nbsp;✘ ${state.answers.filter(a=>!a.correct).length}`;
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  const diffLabel = { easy:'Fácil', medium:'Médio', hard:'Difícil' }[q.diff];
+  const diffClass = { easy:'badge-easy', medium:'badge-medium', hard:'badge-hard' }[q.diff];
+
+  let optsHTML = '';
+  if (q.type === 'vf') {
+    optsHTML = `<div class="vf-row">
+      <button class="vf-btn" onclick="answer(0)">${q.opts[0]}</button>
+      <button class="vf-btn" onclick="answer(1)">${q.opts[1]}</button>
+    </div>`;
+  } else {
+    const letters = ['A','B','C','D'];
+    optsHTML = `<div class="options">` + q.opts.map((o, i) =>
+      `<button class="opt-btn" onclick="answer(${i})">
+        <span class="opt-letter">${letters[i]}</span>
+        <span>${o}</span>
+       </button>`
+    ).join('') + `</div>`;
+  }
+
+  document.getElementById('quiz-area').innerHTML = `
+    <div class="q-card" id="qcard">
+      <div class="q-meta">
+        <span class="badge ${diffClass}">${diffLabel}</span>
+        <span class="badge badge-topic">${q.topic}</span>
+        <span class="q-num">${state.idx + 1} / ${total}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      ${optsHTML}
+      <div class="feedback" id="feedback"></div>
+      <button class="next-btn" id="next-btn" onclick="nextQ()">
+        ${state.idx + 1 < total ? 'Próxima →' : 'Ver Resultado →'}
+      </button>
+    </div>`;
+}
+
+// ─────────── ANSWER ───────────
+function answer(chosen) {
+  const q = state.questions[state.idx];
+  const isCorrect = chosen === q.correct;
+  if (isCorrect) state.score++;
+
+  state.answers.push({ qi: state.idx, chosen, correct: isCorrect, q });
+
+  // disable all buttons
+  const btns = document.querySelectorAll('.opt-btn, .vf-btn');
+  btns.forEach(b => b.disabled = true);
+
+  // mark correct / wrong
+  if (q.type === 'vf') {
+    btns.forEach((b, i) => {
+      if (i === q.correct) b.classList.add('correct');
+      else if (i === chosen && !isCorrect) b.classList.add('wrong');
+    });
+  } else {
+    document.querySelectorAll('.opt-btn').forEach((b, i) => {
+      if (i === q.correct) b.classList.add('correct');
+      else if (i === chosen && !isCorrect) b.classList.add('wrong');
+    });
+  }
+
+  // feedback
+  const fb = document.getElementById('feedback');
+  fb.className = `feedback show feedback-${isCorrect ? 'correct' : 'wrong'}`;
+  fb.innerHTML = isCorrect
+    ? `<strong>✔ Correto!</strong> ${q.expl}`
+    : `<strong>✘ Incorreto.</strong> ${q.expl}`;
+
+  document.getElementById('next-btn').classList.add('show');
+  document.getElementById('score-live').innerHTML = `✔ ${state.score} &nbsp;✘ ${state.answers.filter(a=>!a.correct).length}`;
+}
+
+// ─────────── NEXT ───────────
+function nextQ() {
+  state.idx++;
+  if (state.idx >= state.questions.length) {
+    showResult();
+  } else {
+    renderQuestion();
+    document.getElementById('progress-wrap').style.display = 'block';
+  }
+}
+
+// ─────────── RESULT ───────────
+function showResult() {
+  document.getElementById('quiz-area').innerHTML = '';
+  document.getElementById('progress-wrap').style.display = 'none';
+
+  const total = state.questions.length;
+  const pct = Math.round((state.score / total) * 100);
+
+  // breakdown by diff
+  const diffs = ['easy','medium','hard'];
+  const diffNames = { easy:'Fácil', medium:'Médio', hard:'Difícil' };
+  const diffBreak = {};
+  diffs.forEach(d => {
+    const qs = state.answers.filter(a => a.q.diff === d);
+    const c  = qs.filter(a => a.correct).length;
+    diffBreak[d] = { total: qs.length, correct: c, pct: qs.length ? Math.round(c/qs.length*100) : null };
+  });
+
+  // breakdown by topic
+  const topics = [...new Set(state.answers.map(a => a.q.topic))];
+  const topBreak = {};
+  topics.forEach(t => {
+    const qs = state.answers.filter(a => a.q.topic === t);
+    const c  = qs.filter(a => a.correct).length;
+    topBreak[t] = { total: qs.length, correct: c, pct: Math.round(c/qs.length*100) };
+  });
+
+  // recommendations
+  const recs = [];
+  diffs.forEach(d => {
+    if (diffBreak[d].pct !== null && diffBreak[d].pct < 60) {
+      recs.push(`<strong>Dificuldade ${diffNames[d]}</strong>: revise os conceitos e pratique mais questões nesse nível (aproveitamento: ${diffBreak[d].pct}%).`);
+    }
+  });
+  topics.forEach(t => {
+    if (topBreak[t].pct < 60) {
+      recs.push(`<strong>${t}</strong>: aproveitamento de ${topBreak[t].pct}% — releia o material da aula e refaça o filtro por tópico.`);
+    }
+  });
+
+  // wrong answers review
+  const wrongs = state.answers.filter(a => !a.correct);
+
+  const resultEl = document.getElementById('result-screen');
+  resultEl.innerHTML = `
+    <div class="result-hero">
+      <div class="score-ring">
+        <span class="score-pct">${pct}%</span>
+        <span class="score-label">${state.score}/${total}</span>
+      </div>
+      <div class="result-title">${medal(pct)}</div>
+      <div class="result-sub">${resultMsg(pct)}</div>
+    </div>
+    <div class="result-body">
+
+      <div class="section-title">Desempenho por Dificuldade</div>
+      ${diffs.map(d => {
+        const b = diffBreak[d];
+        if (b.total === 0) return '';
+        const warn = b.pct < 60 ? '<span class="warn-chip">Revisar</span>' : '';
+        return `<div class="breakdown-item">
+          <div class="breakdown-row">
+            <span class="breakdown-label">${diffNames[d]}${warn}</span>
+            <div class="bar-track"><div class="bar-fill ${d}" style="width:${b.pct}%"></div></div>
+            <span class="breakdown-count">${b.correct}/${b.total} · ${b.pct}%</span>
+          </div>
+        </div>`;
+      }).join('')}
+
+      <div class="section-title" style="margin-top:28px">Desempenho por Tópico</div>
+      ${topics.map(t => {
+        const b = topBreak[t];
+        const warn = b.pct < 60 ? '<span class="warn-chip">Revisar</span>' : '';
+        return `<div class="breakdown-item">
+          <div class="breakdown-row">
+            <span class="breakdown-label" style="flex:0 0 180px">${t}${warn}</span>
+            <div class="bar-track"><div class="bar-fill topic" style="width:${b.pct}%"></div></div>
+            <span class="breakdown-count">${b.correct}/${b.total} · ${b.pct}%</span>
+          </div>
+        </div>`;
+      }).join('')}
+
+      ${recs.length ? `
+        <div class="section-title" style="margin-top:28px">📌 Recomendações</div>
+        <ul class="rec-list">${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+      ` : `<div style="margin-top:28px;padding:14px 16px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 8px 8px 0;font-size:13px;color:#15803d"><strong>🎉 Parabéns!</strong> Aproveitamento excelente em todos os tópicos.</div>`}
+
+      ${wrongs.length ? `
+        <div class="section-title" style="margin-top:28px">📖 Revisão das Questões Erradas (${wrongs.length})</div>
+        ${wrongs.map((a, idx) => `
+          <div class="review-card">
+            <div class="review-header" onclick="toggleReview(this)">
+              <div class="review-icon w">✘</div>
+              <div class="review-q">${idx+1}. ${a.q.q.replace(/\[PEGADINHA\] /,'')}</div>
+              <span style="font-size:18px;color:var(--muted);margin-left:8px">›</span>
+            </div>
+            <div class="review-body">
+              <div class="review-answer">Sua resposta: <span style="color:var(--wrong)">${a.q.opts[a.chosen]}</span></div>
+              <div class="review-answer">Resposta correta: <span style="color:var(--correct)">${a.q.opts[a.q.correct]}</span></div>
+              <div class="review-expl" style="margin-top:8px">${a.q.expl}</div>
+            </div>
+          </div>
+        `).join('')}
+      ` : `<div style="margin-top:28px;font-size:14px;color:var(--easy);font-weight:600">🏆 Nenhuma questão errada! Desempenho perfeito.</div>`}
+
+      <button class="retry-btn" onclick="location.reload()">🔄 Refazer Quiz</button>
+    </div>
+  `;
+
+  resultEl.style.display = 'block';
+  resultEl.classList.add('show');
+  resultEl.scrollIntoView({ behavior: 'smooth' });
+}
+
+function medal(p) {
+  if (p >= 90) return '🏆 Desempenho Excelente!';
+  if (p >= 75) return '🥈 Muito Bem!';
+  if (p >= 60) return '✅ Aprovado!';
+  return '📚 Continue Estudando';
+}
+function resultMsg(p) {
+  if (p >= 90) return 'Domínio completo do conteúdo das aulas 6, 7 e 8.';
+  if (p >= 75) return 'Bom desempenho! Revise os tópicos com menor aproveitamento.';
+  if (p >= 60) return 'Aproveitamento satisfatório. Dedique mais atenção às questões difíceis.';
+  return 'Revise o material das aulas e tente novamente.';
+}
+
+function toggleReview(header) {
+  const body = header.nextElementSibling;
+  body.classList.toggle('open');
+}
+</script>
+</body>
+</html>

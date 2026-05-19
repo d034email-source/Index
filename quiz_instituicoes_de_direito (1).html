@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — Instituições de Direito</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:     #1a1a2e;
+    --mid:     #4a4a6a;
+    --muted:   #8888aa;
+    --bg:      #ffffff;
+    --surface: #f7f7fb;
+    --border:  #e4e4f0;
+    --accent:  #5c4ee8;
+    --accent2: #8b6ff0;
+    --easy:    #22c55e;
+    --medium:  #f59e0b;
+    --hard:    #ef4444;
+    --correct: #16a34a;
+    --wrong:   #dc2626;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+  /* ── HEADER ── */
+  .header{background:var(--ink);padding:28px 24px 22px;text-align:center}
+  .header-eyebrow{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);font-weight:500;margin-bottom:6px}
+  .header h1{font-family:'Playfair Display',serif;font-size:clamp(22px,4vw,32px);color:#fff;font-weight:700}
+  .header-sub{font-size:13px;color:#9999bb;margin-top:6px}
+
+  /* ── CONTROLS ── */
+  .controls{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+  .chip{border:1.5px solid var(--border);background:var(--bg);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--mid);transition:.15s}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .sep{width:1px;height:24px;background:var(--border)}
+  .toggle-btn{border:1.5px solid var(--border);background:var(--bg);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:500;cursor:pointer;color:var(--mid);display:flex;align-items:center;gap:6px;transition:.15s}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .toggle-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+
+  /* ── PROGRESS ── */
+  .progress-bar-wrap{background:var(--surface);padding:10px 20px;border-bottom:1px solid var(--border)}
+  .progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .progress-track{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;transition:width .4s}
+
+  /* ── QUIZ AREA ── */
+  .quiz-area{max-width:720px;margin:0 auto;padding:28px 20px 60px}
+
+  /* ── QUESTION CARD ── */
+  .q-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:0;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+  .q-header{padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .q-num{font-size:12px;color:var(--muted);font-weight:500}
+  .badge{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+  .badge-easy{background:#dcfce7;color:#15803d}
+  .badge-medium{background:#fef3c7;color:#b45309}
+  .badge-hard{background:#fee2e2;color:#b91c1c}
+  .q-type{font-size:10px;color:var(--muted);font-style:italic}
+  .q-body{padding:14px 20px 16px}
+  .q-text{font-size:15px;line-height:1.65;font-weight:400}
+  .q-trap{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#f59e0b;font-weight:600;margin-top:6px}
+
+  /* ── OPTIONS ── */
+  .options{display:grid;gap:8px;margin-top:16px}
+  .opt{border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;font-size:14px;line-height:1.5;display:flex;align-items:flex-start;gap:10px;background:var(--bg);transition:.15s;text-align:left;width:100%}
+  .opt:hover:not(:disabled){border-color:var(--accent);background:#f5f3ff}
+  .opt .letter{min-width:22px;height:22px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--mid);transition:.15s;flex-shrink:0;margin-top:1px}
+  .opt:hover:not(:disabled) .letter{background:var(--accent);border-color:var(--accent);color:#fff}
+  .opt.correct{border-color:var(--correct);background:#f0fdf4}
+  .opt.correct .letter{background:var(--correct);border-color:var(--correct);color:#fff}
+  .opt.wrong{border-color:var(--wrong);background:#fff5f5}
+  .opt.wrong .letter{background:var(--wrong);border-color:var(--wrong);color:#fff}
+  .opt.reveal{border-color:var(--correct);background:#f0fdf4;opacity:.75}
+  .opt.reveal .letter{background:var(--correct);border-color:var(--correct);color:#fff}
+  .opt:disabled{cursor:default}
+
+  /* V/F buttons */
+  .vf-wrap{display:flex;gap:10px;margin-top:16px}
+  .vf-btn{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-weight:600;cursor:pointer;background:var(--bg);transition:.15s}
+  .vf-btn:hover:not(:disabled){background:var(--surface);border-color:var(--accent);color:var(--accent)}
+  .vf-btn.correct{border-color:var(--correct);background:#f0fdf4;color:var(--correct)}
+  .vf-btn.wrong{border-color:var(--wrong);background:#fff5f5;color:var(--wrong)}
+  .vf-btn.reveal{border-color:var(--correct);background:#f0fdf4;color:var(--correct);opacity:.7}
+  .vf-btn:disabled{cursor:default}
+
+  /* ── FEEDBACK ── */
+  .feedback{margin-top:12px;padding:12px 14px;border-radius:10px;font-size:13px;line-height:1.6;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+  .feedback.nope{background:#fff5f5;border:1px solid #fecaca;color:#991b1b}
+  .feedback strong{font-weight:600}
+
+  /* ── NAVIGATION ── */
+  .nav{display:flex;justify-content:flex-end;margin-top:16px}
+  .next-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer;display:none;transition:.15s}
+  .next-btn:hover{background:var(--accent2)}
+  .next-btn.show{display:inline-flex;align-items:center;gap:6px}
+
+  /* ── RESULT SCREEN ── */
+  #result-screen{display:none;max-width:720px;margin:0 auto;padding:28px 20px 60px}
+  .result-hero{background:var(--ink);border-radius:16px;padding:32px 28px;text-align:center;color:#fff;margin-bottom:20px}
+  .result-score{font-family:'Playfair Display',serif;font-size:56px;font-weight:700;color:#fff;line-height:1}
+  .result-label{font-size:13px;color:#9999bb;margin-top:6px}
+  .result-pct{font-size:28px;font-weight:700;margin-top:10px;color:var(--accent2)}
+  .result-msg{font-size:14px;color:#b0b0cc;margin-top:8px}
+
+  /* breakdown */
+  .breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  @media(max-width:480px){.breakdown-grid{grid-template-columns:1fr}}
+  .bk-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--bg)}
+  .bk-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin-bottom:10px}
+  .bk-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .bk-label{font-size:12px;color:var(--mid);min-width:80px}
+  .bk-track{flex:1;height:6px;background:var(--border);border-radius:6px;overflow:hidden}
+  .bk-fill{height:100%;border-radius:6px;transition:width .6s .3s}
+  .bk-pct{font-size:11px;font-weight:600;color:var(--mid);min-width:32px;text-align:right}
+
+  /* recommendations */
+  .rec-section{border:1px solid #fde68a;border-radius:12px;padding:16px;background:#fffbeb;margin-bottom:16px}
+  .rec-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#92400e;font-weight:600;margin-bottom:10px}
+  .rec-item{font-size:13px;color:#78350f;margin-bottom:4px;display:flex;gap:6px}
+
+  /* review */
+  .review-section{margin-top:4px}
+  .review-title{font-size:13px;font-weight:600;color:var(--mid);margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
+  .rev-card{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:var(--surface)}
+  .rev-q{font-size:14px;line-height:1.6;margin-bottom:8px}
+  .rev-wrong{font-size:13px;color:var(--wrong);margin-bottom:4px}
+  .rev-correct{font-size:13px;color:var(--correct);margin-bottom:6px;font-weight:500}
+  .rev-exp{font-size:12px;color:var(--mid);line-height:1.5;border-top:1px solid var(--border);padding-top:8px;margin-top:4px}
+
+  /* restart */
+  .restart-btn{display:block;margin:20px auto 0;background:var(--ink);color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.3px}
+  .restart-btn:hover{background:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Estudo</div>
+  <h1>Instituições de Direito</h1>
+  <div class="header-sub">Direito Administrativo &amp; Direito Civil</div>
+</div>
+
+<div class="controls" id="controls">
+  <button class="chip active" data-filter="all" onclick="setFilter('all',this)">Todas</button>
+  <button class="chip" data-filter="easy" onclick="setFilter('easy',this)">Fácil</button>
+  <button class="chip" data-filter="medium" onclick="setFilter('medium',this)">Médio</button>
+  <button class="chip" data-filter="hard" onclick="setFilter('hard',this)">Difícil</button>
+  <div class="sep"></div>
+  <button class="toggle-btn" id="shuffle-btn" onclick="toggleShuffle()">🔀 Embaralhar</button>
+</div>
+
+<div class="progress-bar-wrap" id="progress-wrap">
+  <div class="progress-meta">
+    <span id="prog-label">Questão 1 de 30</span>
+    <span id="prog-score">0 acertos</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+</div>
+
+<div class="quiz-area" id="quiz-area"></div>
+<div id="result-screen"></div>
+
+<script>
+const ALL_QUESTIONS = [
+  /* ─── FÁCIL ─── */
+  {
+    id:1, diff:'easy', topic:'Direito Administrativo', type:'definição',
+    q:'Qual é o objeto central do Direito Administrativo?',
+    opts:[
+      'Regulamentar as relações privadas entre empresas e consumidores',
+      'Regular a organização da Administração Pública e as relações entre Estado e particulares',
+      'Normatizar exclusivamente os contratos de trabalho no setor público',
+      'Estabelecer normas para a criação de partidos políticos'
+    ],
+    a:1,
+    exp:'O Direito Administrativo é o conjunto de normas que regula a organização da Administração Pública, a atuação do Estado e a relação entre Estado e particulares.'
+  },
+  {
+    id:2, diff:'easy', topic:'Princípios LIMPE', type:'reconhecimento',
+    q:'A sigla LIMPE reúne os cinco princípios básicos da Administração Pública. Quais são eles?',
+    opts:[
+      'Legalidade, Imparcialidade, Moralidade, Publicidade e Eficiência',
+      'Legitimidade, Impessoalidade, Moralidade, Publicidade e Equidade',
+      'Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência',
+      'Legalidade, Igualdade, Moralidade, Probidade e Eficiência'
+    ],
+    a:2,
+    exp:'LIMPE: Legalidade, Impessoalidade, Moralidade, Publicidade e Eficiência. São os princípios constitucionais da Administração Pública previstos no art. 37 da CF/88.'
+  },
+  {
+    id:3, diff:'easy', topic:'Licitação', type:'definição',
+    q:'O que é licitação no âmbito do Direito Administrativo?',
+    opts:[
+      'Contrato firmado diretamente entre poder público e empresa, sem concorrência',
+      'Sanção administrativa aplicada a fornecedores que descumprem contratos',
+      'Procedimento do poder público para contratar garantindo igualdade, transparência e melhor proposta',
+      'Autorização para que empresas privadas prestem serviços de interesse público'
+    ],
+    a:2,
+    exp:'A licitação é o procedimento pelo qual a Administração Pública seleciona a proposta mais vantajosa para celebrar contratos, assegurando igualdade entre os concorrentes e transparência.'
+  },
+  {
+    id:4, diff:'easy', topic:'Direito Civil', type:'definição',
+    q:'Segundo o Direito Civil brasileiro, quando se inicia a personalidade jurídica da pessoa natural?',
+    opts:[
+      'A partir do registro civil de nascimento em cartório',
+      'Aos 16 anos, quando a pessoa adquire capacidade relativa',
+      'Com o nascimento com vida',
+      'A partir da concepção, independentemente do nascimento'
+    ],
+    a:2,
+    exp:'A personalidade jurídica da pessoa natural começa com o nascimento com vida (art. 2.º do Código Civil), embora a lei ponha a salvo os direitos do nascituro desde a concepção.'
+  },
+  {
+    id:5, diff:'easy', topic:'Ato Administrativo', type:'definição',
+    q:'O que caracteriza um ato administrativo?',
+    opts:[
+      'Qualquer declaração verbal feita por agente público em exercício',
+      'Manifestação de vontade da Administração Pública que produz efeitos jurídicos',
+      'Documento interno da administração sem repercussão para terceiros',
+      'Decisão judicial que ordena a prática de um ato pelo poder público'
+    ],
+    a:1,
+    exp:'Ato administrativo é a manifestação unilateral de vontade da Administração Pública que produz efeitos jurídicos. Exemplos: nomeação de servidor, aplicação de multa, concessão de licença.'
+  },
+  {
+    id:6, diff:'easy', topic:'Direito Civil', type:'definição',
+    q:'O que é o negócio jurídico, conforme o Código Civil?',
+    opts:[
+      'Todo fato natural que independe da vontade humana, mas produz efeitos jurídicos',
+      'Manifestação de vontade destinada a criar, modificar ou extinguir direitos',
+      'Ato ilícito praticado com a intenção de lesar terceiros',
+      'Declaração unilateral da Administração Pública que vincula particulares'
+    ],
+    a:1,
+    exp:'O negócio jurídico é uma manifestação de vontade humana com a finalidade específica de criar, modificar ou extinguir direitos. Todo contrato é um negócio jurídico.'
+  },
+  {
+    id:7, diff:'easy', topic:'Capacidade Civil', type:'reconhecimento',
+    q:'Qual grupo é considerado absolutamente incapaz pela lei civil brasileira?',
+    opts:[
+      'Maiores de 16 e menores de 18 anos',
+      'Pessoas com deficiência mental que não conseguem expressar vontade',
+      'Menores de 16 anos',
+      'Pessoas maiores de 70 anos que vivem em instituições'
+    ],
+    a:2,
+    exp:'São absolutamente incapazes os menores de 16 anos (art. 3.º do CC). Eles devem ser representados por seus representantes legais para praticar atos da vida civil.'
+  },
+  {
+    id:8, diff:'easy', topic:'Pessoas Jurídicas', type:'definição',
+    q:'O que diferencia a pessoa jurídica de seus sócios ou membros, do ponto de vista legal?',
+    opts:[
+      'A pessoa jurídica é sempre mais responsável pelas dívidas do que os sócios individualmente',
+      'A pessoa jurídica tem personalidade jurídica própria, distinta da de seus membros',
+      'Os sócios respondem ilimitadamente pelas obrigações da pessoa jurídica em todos os casos',
+      'A pessoa jurídica não pode celebrar contratos sem a assinatura de todos os sócios'
+    ],
+    a:1,
+    exp:'A pessoa jurídica possui personalidade jurídica própria, separada da de seus sócios ou membros. Por isso, em regra, os sócios não respondem pelas dívidas da sociedade.'
+  },
+  {
+    id:9, diff:'easy', topic:'Direito Administrativo', type:'reconhecimento',
+    q:'Qual dos exemplos a seguir é um ato administrativo do tipo "punitivo"?',
+    opts:[
+      'Decreto que regulamenta o funcionamento de serviços públicos',
+      'Autorização concedida para uso de bem público',
+      'Circular interna que organiza a escala de servidores',
+      'Multa aplicada a um particular por infração a norma administrativa'
+    ],
+    a:3,
+    exp:'Os atos punitivos aplicam sanções. A multa por infração administrativa é o exemplo clássico de ato punitivo.'
+  },
+
+  /* ─── MÉDIO ─── */
+  {
+    id:10, diff:'medium', topic:'Ato Administrativo', type:'diferenciação',
+    q:'Qual é a diferença fundamental entre ato administrativo vinculado e discricionário?',
+    opts:[
+      'O vinculado exige publicação no Diário Oficial; o discricionário dispensa essa formalidade',
+      'O vinculado pode ser praticado por qualquer servidor; o discricionário exige autoridade superior',
+      'No vinculado, a lei define todos os requisitos sem margem de escolha; no discricionário, há certa liberdade decisória',
+      'O vinculado produz efeitos imediatos; o discricionário só produz efeitos após aprovação judicial'
+    ],
+    a:2,
+    exp:'No ato vinculado, a lei define todos os elementos e o agente não tem margem de escolha (ex.: concessão de aposentadoria cumpridos os requisitos). No discricionário, há liberdade de decisão dentro dos limites legais (ex.: escolha do local para construir uma escola).'
+  },
+  {
+    id:11, diff:'medium', topic:'Licitação', type:'diferenciação',
+    q:'Qual é a distinção correta entre "dispensa de licitação" e "inexigibilidade de licitação"?',
+    opts:[
+      'Dispensa ocorre quando não há competição possível; inexigibilidade é autorizada por lei para casos específicos',
+      'Ambas têm o mesmo significado; são apenas termos diferentes para a mesma hipótese',
+      'Dispensa é autorizada por lei para situações específicas; inexigibilidade ocorre quando não há possibilidade de competição',
+      'Dispensa se aplica só a contratos de grande valor; inexigibilidade, apenas a contratos emergenciais'
+    ],
+    a:2,
+    exp:'Na dispensa, poderia haver licitação, mas a lei permite a contratação direta (ex.: pequeno valor ou emergência). Na inexigibilidade, é inviável a competição (ex.: contratação de artista exclusivo ou especialista único).'
+  },
+  {
+    id:12, diff:'medium', topic:'Princípios LIMPE', type:'aplicação situacional',
+    q:'Um prefeito cria, por decreto, uma nova taxa municipal sem qualquer base em lei formal aprovada pela Câmara. Qual princípio administrativo foi violado?',
+    opts:[
+      'Eficiência, pois o ato gerou desperdício de recursos públicos',
+      'Publicidade, pois o decreto não foi divulgado no Diário Oficial',
+      'Legalidade, pois o administrador público só pode agir conforme a lei autoriza',
+      'Impessoalidade, pois o decreto favorece determinado grupo de contribuintes'
+    ],
+    a:2,
+    exp:'O princípio da Legalidade determina que o administrador público só pode agir conforme a lei autoriza. Criar tributo sem base legal viola diretamente esse princípio.'
+  },
+  {
+    id:13, diff:'medium', topic:'Ato Administrativo', type:'diferenciação',
+    q:'Assinale a alternativa que descreve corretamente o elemento "motivo" do ato administrativo.',
+    opts:[
+      'Autoridade legal que o agente possui para praticar o ato',
+      'Forma prescrita em lei que o ato deve obedecer para ser válido',
+      'Razão de fato e de direito que justifica a prática do ato',
+      'Resultado concreto que o ato produz no mundo jurídico'
+    ],
+    a:2,
+    exp:'O motivo é a razão que justifica o ato (ex.: a infração comprovada é o motivo para aplicação de uma multa). Não confundir com objeto, que é o efeito jurídico produzido.'
+  },
+  {
+    id:14, diff:'medium', topic:'Defeitos do Negócio Jurídico', type:'diferenciação',
+    q:'Uma empresa fecha contrato com fornecedor acreditando que o equipamento era novo, quando era recondicionado — sem que o fornecedor tenha agido de má-fé. Que defeito do negócio jurídico está presente?',
+    opts:[
+      'Dolo, pois houve uma falsa representação da realidade com intenção de enganar',
+      'Coação, pois a empresa se sentiu pressionada a assinar o contrato',
+      'Erro, pois há uma falsa percepção da realidade sem indução intencional',
+      'Lesão, pois o preço pago foi desproporcional ao valor real do bem'
+    ],
+    a:2,
+    exp:'O erro é a falsa percepção da realidade sem que haja indução por terceiro. Quando o fornecedor age de má-fé e induz ao engano, configura-se dolo.'
+  },
+  {
+    id:15, diff:'medium', topic:'Defeitos do Negócio Jurídico', type:'diferenciação',
+    q:'Um empresário aceita condições contratuais extremamente desvantajosas para obter empréstimo e evitar que sua empresa quebre. Qual defeito está configurado?',
+    opts:[
+      'Lesão, pois há desproporção entre as prestações por inexperiência do empresário',
+      'Estado de perigo, pois a pessoa assume obrigação excessiva para se salvar de dano grave',
+      'Coação, pois o credor ameaçou o empresário para forçar a assinatura',
+      'Fraude contra credores, pois os bens da empresa serão reduzidos'
+    ],
+    a:1,
+    exp:'Estado de perigo: a pessoa assume obrigação excessiva para salvar a si ou outrem de dano grave (ex.: aceitar juros abusivos para salvar a empresa da falência). Difere da lesão, que envolve desproporção por inexperiência ou necessidade, sem o elemento de urgência extrema.'
+  },
+  {
+    id:16, diff:'medium', topic:'Licitação', type:'aplicação situacional',
+    q:'Uma empresa de tecnologia quer vender softwares ao governo municipal. Para isso, deve participar de qual procedimento, em regra?',
+    opts:[
+      'Pode entregar a proposta diretamente ao prefeito, sem necessidade de procedimento formal',
+      'Deve ser contratada por inexigibilidade, pois se trata de serviço especializado',
+      'Deve participar de licitação, sendo o pregão a modalidade mais comum para bens e serviços',
+      'Precisa apenas de autorização da Câmara Municipal para firmar o contrato'
+    ],
+    a:2,
+    exp:'Para contratar com o poder público, empresas em geral devem participar de licitação. O pregão é a modalidade mais utilizada para bens e serviços comuns, como softwares padronizados.'
+  },
+  {
+    id:17, diff:'medium', topic:'Ato Administrativo', type:'diferenciação',
+    q:'Um decreto presidencial que regulamenta o funcionamento de órgãos federais é classificado como qual espécie de ato administrativo?',
+    opts:[
+      'Negocial, pois envolve o interesse de particulares na sua aplicação',
+      'Punitivo, pois impõe obrigações aos servidores públicos',
+      'Ordinatório, pois apenas organiza a hierarquia interna da administração',
+      'Normativo, pois cria regras gerais e abstratas aplicáveis aos destinatários'
+    ],
+    a:3,
+    exp:'Atos normativos criam regras gerais, como os decretos. Atos ordinatórios organizam internamente a administração (circulares, portarias internas). A distinção está no alcance: normativo = regras gerais; ordinatório = organização interna.'
+  },
+  {
+    id:18, diff:'medium', topic:'Direito Civil', type:'aplicação situacional',
+    q:'Um adolescente de 17 anos quer abrir uma empresa como sócio. Qual é a situação jurídica correta?',
+    opts:[
+      'Pode abrir a empresa normalmente, pois já tem capacidade plena de fato',
+      'É absolutamente incapaz e não pode participar de nenhum ato jurídico',
+      'É relativamente incapaz e pode praticar o ato se devidamente assistido por representante legal',
+      'Só poderá abrir empresa após completar 21 anos, segundo a lei civil'
+    ],
+    a:2,
+    exp:'Maiores de 16 e menores de 18 anos são relativamente incapazes (art. 4.º do CC) e precisam de assistência de seus representantes legais para praticar atos da vida civil, como abrir uma empresa.'
+  },
+  {
+    id:19, diff:'medium', topic:'Negócio Jurídico', type:'aplicação situacional',
+    q:'Para que um negócio jurídico seja válido, o art. 104 do Código Civil exige três requisitos. Qual alternativa os apresenta corretamente?',
+    opts:[
+      'Agente capaz, objeto lícito/possível/determinável, forma prescrita ou não proibida em lei',
+      'Partes maiores de 18 anos, objeto de valor econômico e registro em cartório',
+      'Consentimento expresso, testemunhas presentes e objeto lícito',
+      'Documento escrito, objeto determinado e aprovação de autoridade competente'
+    ],
+    a:0,
+    exp:'Art. 104 do CC: agente capaz + objeto lícito, possível, determinado ou determinável + forma prescrita ou não proibida em lei. Esses são os três requisitos de validade do negócio jurídico.'
+  },
+  {
+    id:20, diff:'medium', topic:'Fato Jurídico', type:'diferenciação',
+    q:'A morte de um sócio, que gera a necessidade de inventário e partilha, e a assinatura de um contrato de compra e venda: como esses eventos são classificados no Direito Civil?',
+    opts:[
+      'Ambos são atos jurídicos, pois os dois produzem efeitos no mundo jurídico',
+      'A morte é fato natural; a assinatura do contrato é fato humano (ato jurídico)',
+      'Ambos são negócios jurídicos, pois envolvem transferência de patrimônio',
+      'A morte é negócio jurídico; a assinatura do contrato é fato natural'
+    ],
+    a:1,
+    exp:'Fato natural: independe da vontade humana (morte, nascimento, tempestade). Fato humano: depende da ação humana. A assinatura de um contrato é um fato humano, especificamente um negócio jurídico.'
+  },
+  {
+    id:21, diff:'medium', topic:'Princípios LIMPE', type:'aplicação situacional',
+    q:'Um órgão público contrata mais funcionários do que o necessário, gerando gastos excessivos sem melhoria dos serviços. Qual princípio da Administração Pública é desrespeitado principalmente?',
+    opts:[
+      'Publicidade, pois as contratações não foram divulgadas ao público',
+      'Impessoalidade, pois os contratados podem ter sido favorecidos',
+      'Legalidade, pois a contratação sem concurso público é ilegal',
+      'Eficiência, pois a administração deve buscar resultados com qualidade e economia'
+    ],
+    a:3,
+    exp:'O princípio da Eficiência exige que a Administração Pública alcance resultados com qualidade e economicidade. Contratar além da necessidade, gerando desperdício, viola diretamente esse princípio.'
+  },
+
+  /* ─── DIFÍCIL ─── */
+  {
+    id:22, diff:'hard', topic:'Princípios LIMPE', type:'pegadinha',
+    q:'[PEGADINHA] Afirma-se: "O princípio da Moralidade administrativa é redundante, pois tudo que é legal também é moral, e o princípio da Legalidade já cobre essa exigência." Essa afirmação é:',
+    opts:[
+      'Correta, pois a legalidade implica necessariamente conformidade com a moral pública',
+      'Correta apenas para a Administração Federal, não para Estados e Municípios',
+      'Incorreta, pois um ato pode ser legal e ainda assim imoral — a moralidade exige padrão ético além da mera conformidade legal',
+      'Incorreta somente em casos de desvio de finalidade do agente público'
+    ],
+    a:2,
+    exp:'PEGADINHA: Legalidade e Moralidade são princípios autônomos. Um ato pode ser formalmente legal mas violar a ética pública (ex.: usar recursos legais para fins pessoais de forma desonesta). O princípio da Moralidade exige comportamento ético além da simples conformidade com a lei.'
+  },
+  {
+    id:23, diff:'hard', topic:'Licitação', type:'análise crítica',
+    q:'Um gestor público contrata diretamente uma empresa, sem licitação e sem qualquer justificativa legal. Qual é a análise jurídica mais completa desse cenário?',
+    opts:[
+      'O ato é irregular apenas do ponto de vista formal, mas válido se a empresa for a mais barata',
+      'A ausência de licitação viola os princípios da legalidade, impessoalidade e publicidade, podendo gerar nulidade do contrato e responsabilização do gestor',
+      'O ato é inválido somente se o valor contratado superar o limite legal para dispensa de licitação',
+      'A contratação direta é permitida quando o gestor decide que a licitação seria demorada demais'
+    ],
+    a:1,
+    exp:'A contratação sem licitação sem fundamento legal viola múltiplos princípios: legalidade (ausência de base legal), impessoalidade (possível favorecimento) e publicidade (falta de transparência). O gestor pode responder por improbidade administrativa e o contrato pode ser anulado.'
+  },
+  {
+    id:24, diff:'hard', topic:'Negócio Jurídico', type:'análise crítica',
+    q:'Uma empresa firma contrato de locação de imóvel comercial com objeto lícito e forma adequada, mas o sócio-representante da locatária tinha apenas 15 anos na data da assinatura, sem representação legal. Esse contrato é:',
+    opts:[
+      'Válido, pois o objeto é lícito e a forma foi respeitada',
+      'Anulável, pois o sócio era relativamente incapaz e deveria ter sido assistido',
+      'Nulo de pleno direito, pois um dos requisitos do art. 104 do CC não foi atendido — agente capaz',
+      'Válido somente para as cláusulas que não prejudicam o menor de idade'
+    ],
+    a:2,
+    exp:'Um dos requisitos do art. 104 do CC é o agente capaz. Menor de 15 anos é absolutamente incapaz e deve ser representado. Sem representação, o negócio jurídico é nulo, não apenas anulável — há ausência de um pressuposto essencial de validade.'
+  },
+  {
+    id:25, diff:'hard', topic:'Licitação', type:'pegadinha',
+    q:'[PEGADINHA] Uma prefeitura precisa contratar um cantor consagrado para o evento oficial de aniversário da cidade. O Secretário afirma que deve abrir licitação na modalidade "pregão" por se tratar de serviço. Essa decisão é:',
+    opts:[
+      'Correta, pois o pregão é a modalidade obrigatória para qualquer contratação de serviços',
+      'Incorreta: trata-se de hipótese de inexigibilidade de licitação, pois não há competição possível para artistas com notória especialização',
+      'Correta, pois concorrência e pregão são igualmente aplicáveis a contratos de serviços artísticos',
+      'Incorreta: a contratação deve ser feita por dispensa de licitação, não por pregão'
+    ],
+    a:1,
+    exp:'PEGADINHA: A contratação de artista exclusivo ou com notória especialização é hipótese de inexigibilidade de licitação (não há como competir por algo único). Não se aplica o pregão, que serve para bens e serviços comuns com competição possível.'
+  },
+  {
+    id:26, diff:'hard', topic:'Defeitos do Negócio Jurídico', type:'análise crítica',
+    q:'Um empresário devedor, prestes a ser executado por credores, transfere bens imóveis para seus filhos sem receber pagamento. Qual é o enquadramento jurídico correto?',
+    opts:[
+      'Lesão, pois o valor recebido foi muito inferior ao valor de mercado dos imóveis',
+      'Coação, pois o empresário foi pressionado pelos credores a transferir os bens',
+      'Fraude contra credores, pois o ato reduziu o patrimônio do devedor para prejudicar quem tem direito ao recebimento',
+      'Estado de perigo, pois o empresário agiu para evitar dano grave ao seu patrimônio'
+    ],
+    a:2,
+    exp:'Fraude contra credores: ato praticado para prejudicar credores, reduzindo o patrimônio do devedor. A transferência gratuita de bens para familiares, quando o devedor sabe que tem dívidas, é o exemplo clássico desse defeito.'
+  },
+  {
+    id:27, diff:'hard', topic:'Ato Administrativo', type:'pegadinha',
+    q:'[PEGADINHA] Uma multa de trânsito foi aplicada por um servidor que, embora trabalhe no órgão de trânsito, não tem atribuição legal para lavrar autos de infração. A multa é:',
+    opts:[
+      'Válida, pois o servidor pertence ao órgão competente para aplicar multas de trânsito',
+      'Válida, pois o elemento "finalidade" (interesse público) foi respeitado',
+      'Inválida, pois o elemento "competência" não foi observado — o agente deve ter autoridade legal para praticar o ato',
+      'Válida apenas se ratificada por autoridade superior dentro de 30 dias'
+    ],
+    a:2,
+    exp:'PEGADINHA: O fato de o servidor pertencer ao órgão competente não basta — ele próprio precisa ter atribuição legal para o ato. O elemento "competência" exige que o agente específico tenha autoridade legal. Multa aplicada por autoridade incompetente é inválida.'
+  },
+  {
+    id:28, diff:'hard', topic:'Direito Civil', type:'justificativa',
+    q:'No caso prático da aula: empresa compra máquinas de fornecedor que omite defeitos relevantes. Após a entrega, os equipamentos não funcionam. Qual é a análise jurídica correta?',
+    opts:[
+      'Trata-se de erro da compradora, pois ela deveria ter inspecionado melhor antes de assinar',
+      'Trata-se de dolo do fornecedor; o contrato pode ser anulado e o fornecedor pode ser responsabilizado por perdas e danos',
+      'Não há defeito no negócio jurídico; o comprador assume o risco do negócio ao assinar o contrato',
+      'É caso de lesão, pois o preço pago foi desproporcional ao valor real das máquinas defeituosas'
+    ],
+    a:1,
+    exp:'O fornecedor omitiu intencionalmente defeitos para fechar o negócio — isso é dolo (indução intencional ao erro). Diferente do erro, que é espontâneo, no dolo há má-fé do outro contratante. O contrato pode ser anulado e o fornecedor pode responder por perdas e danos.'
+  },
+  {
+    id:29, diff:'hard', topic:'Capacidade Civil', type:'pegadinha',
+    q:'[PEGADINHA] "Um jovem de 16 anos pode praticar atos da vida civil sem necessitar de qualquer outra pessoa, pois o Código Civil reconhece sua capacidade." Essa afirmação é:',
+    opts:[
+      'Correta, pois aos 16 anos o jovem adquire plena capacidade civil',
+      'Incorreta: aos 16 anos o jovem é relativamente incapaz e deve ser assistido, não representado, mas não pode agir de forma completamente independente',
+      'Correta somente para contratos de pequeno valor sem relevância econômica',
+      'Incorreta: aos 16 anos o jovem ainda é absolutamente incapaz, como os menores de 16 anos'
+    ],
+    a:1,
+    exp:'PEGADINHA: Aos 16 anos, o jovem passa de absolutamente a relativamente incapaz. Isso significa que precisa de assistência (não representação), mas não tem capacidade plena. A capacidade plena só vem aos 18 anos (ou por emancipação). A afirmação confunde assistência com independência total.'
+  },
+  {
+    id:30, diff:'hard', topic:'Direito Administrativo', type:'conexões',
+    q:'Um servidor público divulga contratos e licitações no portal da transparência, mesmo que dados sigilosos sejam expostos inadvertidamente. Qual conflito de princípios está em jogo e qual deve prevalecer como regra?',
+    opts:[
+      'Conflito entre Legalidade e Eficiência; deve prevalecer a Legalidade em todos os casos',
+      'Conflito entre Publicidade e Moralidade; a Moralidade sempre prevalece sobre a Publicidade',
+      'Conflito entre Publicidade e Legalidade; a Publicidade como regra, mas com limites legais para proteger sigilo legítimo previsto em lei',
+      'Não há conflito, pois todos os atos administrativos devem ser integralmente públicos sem exceção'
+    ],
+    a:2,
+    exp:'O princípio da Publicidade impõe transparência, mas tem limites: a própria lei prevê casos de sigilo legítimo (segurança nacional, privacidade, investigações). Os princípios LIMPE devem ser aplicados em equilíbrio — nenhum é absoluto. A Publicidade prevalece como regra, com exceções previstas em lei.'
+  },
+  {
+    id:31, diff:'hard', topic:'Ato Administrativo', type:'pegadinha',
+    q:'[PEGADINHA] "Os atos administrativos discricionários são incontroláveis pelo Poder Judiciário, pois envolvem liberdade decisória da Administração." Essa afirmação é:',
+    opts:[
+      'Correta, pois o mérito do ato discricionário é intocável pelo Judiciário',
+      'Correta somente para atos discricionários de alto impacto social',
+      'Incorreta: o Judiciário pode controlar a legalidade do ato discricionário, embora não possa substituir o mérito administrativo',
+      'Incorreta: o Judiciário pode rever integralmente qualquer ato discricionário, inclusive seu mérito'
+    ],
+    a:2,
+    exp:'PEGADINHA: O Judiciário pode sempre controlar a legalidade dos atos administrativos, inclusive os discricionários. O que não pode é substituir o mérito administrativo (a escolha entre opções legítimas). Mas se o ato violar a lei, princípios ou desviar de finalidade, pode ser anulado judicialmente.'
+  },
+  {
+    id:32, diff:'medium', topic:'Direito Civil', type:'diferenciação',
+    q:'Qual a diferença entre "ato jurídico" e "negócio jurídico"?',
+    opts:[
+      'Não há diferença; os dois termos são sinônimos no Código Civil brasileiro',
+      'O ato jurídico tem efeitos definidos pela lei independentemente da vontade das partes; o negócio jurídico tem efeitos determinados pela vontade das partes',
+      'O ato jurídico sempre envolve duas partes; o negócio jurídico pode ser unilateral',
+      'O ato jurídico exige forma escrita; o negócio jurídico pode ser verbal em qualquer caso'
+    ],
+    a:1,
+    exp:'No ato jurídico, a vontade existe, mas os efeitos são fixados pela lei (ex.: pagamento de dívida). No negócio jurídico, as partes escolhem os efeitos dentro dos limites legais (ex.: contratos). Todo negócio jurídico é um ato jurídico, mas nem todo ato jurídico é um negócio.'
+  },
+  {
+    id:33, diff:'medium', topic:'Licitação', type:'aplicação situacional',
+    q:'Em que situação a modalidade "concorrência" é mais adequada?',
+    opts:[
+      'Compra de material de escritório em pequenas quantidades',
+      'Contratação emergencial de serviços durante uma calamidade pública',
+      'Contratos de grande valor que exigem ampla participação de concorrentes, como obras públicas',
+      'Contratação de especialista único sem possibilidade de competição'
+    ],
+    a:2,
+    exp:'A concorrência é destinada a contratos de grande valor e exige ampla participação. É a modalidade típica para grandes obras públicas. Para bens e serviços comuns, usa-se o pregão; para emergências ou pequenos valores, pode haver dispensa.'
+  },
+  {
+    id:34, diff:'easy', topic:'Direito Civil', type:'definição',
+    q:'Quais são os dois tipos principais de pessoas jurídicas segundo o Direito Civil brasileiro?',
+    opts:[
+      'Pessoas jurídicas físicas e pessoas jurídicas virtuais',
+      'Pessoas jurídicas simples e pessoas jurídicas complexas',
+      'Pessoas jurídicas de direito público e de direito privado',
+      'Pessoas jurídicas registradas e pessoas jurídicas não registradas'
+    ],
+    a:2,
+    exp:'As pessoas jurídicas se dividem em direito público (União, Estados, Municípios, autarquias) e direito privado (sociedades empresárias, associações, fundações). Essa distinção define o regime jurídico aplicável.'
+  },
+  {
+    id:35, diff:'hard', topic:'Defeitos do Negócio Jurídico', type:'análise crítica',
+    q:'Qual a diferença entre "lesão" e "estado de perigo" como defeitos do negócio jurídico?',
+    opts:[
+      'Não há diferença prática; ambos geram nulidade absoluta do negócio jurídico',
+      'Na lesão, a desproporção decorre de inexperiência ou necessidade; no estado de perigo, há urgência para evitar dano grave, com aproveitamento doloso da situação',
+      'A lesão sempre envolve contratos de compra e venda; o estado de perigo só ocorre em contratos financeiros',
+      'Na lesão, a parte age de má-fé; no estado de perigo, não há vício de vontade'
+    ],
+    a:1,
+    exp:'Lesão: desproporção entre prestações por inexperiência ou premente necessidade do contratante (ex.: vender imóvel por muito abaixo do valor de mercado). Estado de perigo: a pessoa assume obrigação excessiva para salvar a si ou outrem de dano grave, com aproveitamento da situação pelo outro contratante (ex.: aceitar juros abusivos para salvar a empresa).'
+  }
+];
+
+// ── STATE ──
+let questions = [];
+let current = 0;
+let answered = false;
+let score = 0;
+let results = [];
+let filter = 'all';
+let shuffle = false;
+
+function shuffleArr(a){return a.map(v=>({v,s:Math.random()})).sort((a,b)=>a.s-b.s).map(({v})=>v)}
+
+function buildQuiz(){
+  let pool = filter==='all' ? ALL_QUESTIONS : ALL_QUESTIONS.filter(q=>q.diff===filter);
+  questions = shuffle ? shuffleArr([...pool]) : [...pool];
+  current=0; score=0; answered=false; results=[];
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('quiz-area').style.display='block';
+  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById('controls').style.display='flex';
+  renderQuestion();
+}
+
+function setFilter(f,el){
+  filter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  buildQuiz();
+}
+
+function toggleShuffle(){
+  shuffle=!shuffle;
+  document.getElementById('shuffle-btn').classList.toggle('active',shuffle);
+  buildQuiz();
+}
+
+function renderQuestion(){
+  if(current>=questions.length){showResult();return;}
+  answered=false;
+  const q=questions[current];
+  const total=questions.length;
+
+  document.getElementById('prog-label').textContent=`Questão ${current+1} de ${total}`;
+  document.getElementById('prog-score').textContent=`${score} acerto${score!==1?'s':''}`;
+  document.getElementById('prog-fill').style.width=`${(current/total)*100}%`;
+
+  const badgeCls = q.diff==='easy'?'badge-easy':q.diff==='medium'?'badge-medium':'badge-hard';
+  const badgeTxt = q.diff==='easy'?'Fácil':q.diff==='medium'?'Médio':'Difícil';
+  const typeLabel = q.type;
+  const isPegadinha = q.type==='pegadinha';
+
+  // shuffle options while keeping correct answer index
+  let optIndices = [0,1,2,3];
+  if(shuffle){
+    let shuffled = shuffleArr(optIndices);
+    const newCorrect = shuffled.indexOf(q.a);
+    const html = buildCard(q, shuffled, newCorrect, badgeCls, badgeTxt, typeLabel, isPegadinha);
+    document.getElementById('quiz-area').innerHTML=html;
+    document.getElementById('quiz-area').querySelector('.q-card').dataset.shuffled=JSON.stringify(shuffled);
+    document.getElementById('quiz-area').querySelector('.q-card').dataset.newCorrect=newCorrect;
+  } else {
+    const html = buildCard(q, optIndices, q.a, badgeCls, badgeTxt, typeLabel, isPegadinha);
+    document.getElementById('quiz-area').innerHTML=html;
+  }
+}
+
+function buildCard(q, indices, correct, badgeCls, badgeTxt, typeLabel, isPegadinha){
+  const letters=['A','B','C','D'];
+  const isVF = q.type==='verdadeiro/falso';
+  let optsHtml='';
+  if(isVF){
+    optsHtml=`<div class="vf-wrap">
+      <button class="vf-btn" onclick="pickVF(0)">Verdadeiro</button>
+      <button class="vf-btn" onclick="pickVF(1)">Falso</button>
+    </div>`;
+  } else {
+    optsHtml='<div class="options">';
+    indices.forEach((origIdx,pos)=>{
+      optsHtml+=`<button class="opt" onclick="pick(${pos})" data-pos="${pos}">
+        <span class="letter">${letters[pos]}</span>
+        <span>${q.opts[origIdx]}</span>
+      </button>`;
+    });
+    optsHtml+='</div>';
+  }
+  return `<div class="q-card" data-correct="${correct}">
+    <div class="q-header">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="q-num">Q${current+1}</span>
+        <span class="badge ${badgeCls}">${badgeTxt}</span>
+        <span class="q-type">${typeLabel}</span>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">${q.topic}</span>
+    </div>
+    <div class="q-body">
+      ${isPegadinha?'<div class="q-trap">⚠ Atenção — pegadinha</div>':''}
+      <div class="q-text">${q.q}</div>
+      ${optsHtml}
+      <div class="feedback" id="fb"></div>
+      <div class="nav"><button class="next-btn" id="next-btn" onclick="next()">Próxima →</button></div>
+    </div>
+  </div>`;
+}
+
+function pick(pos){
+  if(answered)return;
+  answered=true;
+  const card=document.querySelector('.q-card');
+  const correct=parseInt(card.dataset.correct);
+  const q=questions[current];
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true);
+  const isCorrect=(pos===correct);
+  btns[pos].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect) btns[correct].classList.add('reveal');
+  showFeedback(isCorrect, q.exp);
+  if(isCorrect)score++;
+  results.push({q,chosen:pos,correct,isCorrect});
+  document.getElementById('prog-score').textContent=`${score} acerto${score!==1?'s':''}`;
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function pickVF(pos){
+  if(answered)return;
+  answered=true;
+  const q=questions[current];
+  const correct=q.a;
+  const btns=document.querySelectorAll('.vf-btn');
+  btns.forEach(b=>b.disabled=true);
+  const isCorrect=(pos===correct);
+  btns[pos].classList.add(isCorrect?'correct':'wrong');
+  if(!isCorrect) btns[correct].classList.add('reveal');
+  showFeedback(isCorrect, q.exp);
+  if(isCorrect)score++;
+  results.push({q,chosen:pos,correct,isCorrect});
+  document.getElementById('prog-score').textContent=`${score} acerto${score!==1?'s':''}`;
+  document.getElementById('next-btn').classList.add('show');
+}
+
+function showFeedback(ok, exp){
+  const fb=document.getElementById('fb');
+  fb.className='feedback show '+(ok?'ok':'nope');
+  fb.innerHTML=(ok?'<strong>✓ Correto!</strong> ':'<strong>✗ Incorreto.</strong> ')+exp;
+}
+
+function next(){current++;renderQuestion();}
+
+function showResult(){
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('controls').style.display='none';
+
+  const total=questions.length;
+  const pct=Math.round((score/total)*100);
+  const msg=pct>=80?'Excelente desempenho!':pct>=60?'Bom resultado, continue revisando.':'Recomendamos revisar os tópicos abaixo.';
+
+  // breakdown by diff
+  const diffs=['easy','medium','hard'];
+  const diffLabels={easy:'Fácil',medium:'Médio',hard:'Difícil'};
+  const diffColors={easy:'var(--easy)',medium:'var(--medium)',hard:'var(--hard)'};
+  const diffStats={};
+  diffs.forEach(d=>{
+    const qs=results.filter(r=>r.q.diff===d);
+    diffStats[d]={total:qs.length, correct:qs.filter(r=>r.isCorrect).length};
+  });
+
+  // breakdown by topic
+  const topicMap={};
+  results.forEach(r=>{
+    const t=r.q.topic;
+    if(!topicMap[t])topicMap[t]={total:0,correct:0};
+    topicMap[t].total++;
+    if(r.isCorrect)topicMap[t].correct++;
+  });
+
+  const recs=Object.entries(topicMap).filter(([t,s])=>s.total>0&&(s.correct/s.total)<0.6);
+
+  let diffHtml=diffs.map(d=>{
+    if(!diffStats[d].total)return'';
+    const p=Math.round((diffStats[d].correct/diffStats[d].total)*100);
+    return`<div class="bk-row">
+      <span class="bk-label">${diffLabels[d]}</span>
+      <div class="bk-track"><div class="bk-fill" style="width:${p}%;background:${diffColors[d]}"></div></div>
+      <span class="bk-pct">${p}%</span>
+    </div>`;
+  }).join('');
+
+  let topicHtml=Object.entries(topicMap).map(([t,s])=>{
+    const p=Math.round((s.correct/s.total)*100);
+    const col=p>=60?'var(--easy)':p>=40?'var(--medium)':'var(--hard)';
+    return`<div class="bk-row">
+      <span class="bk-label" style="min-width:160px;font-size:11px">${t}</span>
+      <div class="bk-track"><div class="bk-fill" style="width:${p}%;background:${col}"></div></div>
+      <span class="bk-pct">${p}%</span>
+    </div>`;
+  }).join('');
+
+  let recsHtml=recs.length?`<div class="rec-section">
+    <div class="rec-title">📚 Tópicos para reforçar</div>
+    ${recs.map(([t])=>`<div class="rec-item">→ <span>${t}</span></div>`).join('')}
+  </div>`:'';
+
+  const wrong=results.filter(r=>!r.isCorrect);
+  let reviewHtml=wrong.length?`<div class="review-section">
+    <div class="review-title">Revisão de erros (${wrong.length})</div>
+    ${wrong.map(r=>{
+      const letters=['A','B','C','D'];
+      const choseTxt=r.q.type==='verdadeiro/falso'?(r.chosen===0?'Verdadeiro':'Falso'):`${letters[r.chosen]}) ${r.q.opts[r.chosen]}`;
+      const corrTxt=r.q.type==='verdadeiro/falso'?(r.correct===0?'Verdadeiro':'Falso'):`${letters[r.correct]}) ${r.q.opts[r.correct]}`;
+      return`<div class="rev-card">
+        <div class="rev-q">${r.q.q}</div>
+        <div class="rev-wrong">Sua resposta: ${choseTxt}</div>
+        <div class="rev-correct">✓ Correta: ${corrTxt}</div>
+        <div class="rev-exp">${r.q.exp}</div>
+      </div>`;
+    }).join('')}
+  </div>`:'<div style="font-size:14px;color:var(--correct);padding:12px 0">🎉 Parabéns! Você acertou todas as questões!</div>';
+
+  const rs=document.getElementById('result-screen');
+  rs.style.display='block';
+  rs.innerHTML=`
+    <div class="result-hero">
+      <div class="result-score">${score}<span style="font-size:28px;color:#7777aa">/${total}</span></div>
+      <div class="result-label">questões corretas</div>
+      <div class="result-pct">${pct}%</div>
+      <div class="result-msg">${msg}</div>
+    </div>
+
+    ${recsHtml}
+
+    <div class="breakdown-grid">
+      <div class="bk-card">
+        <div class="bk-title">Por dificuldade</div>
+        ${diffHtml}
+      </div>
+      <div class="bk-card">
+        <div class="bk-title">Por tópico</div>
+        ${topicHtml}
+      </div>
+    </div>
+
+    ${reviewHtml}
+
+    <button class="restart-btn" onclick="restart()">↺ Refazer Quiz</button>
+  `;
+}
+
+function restart(){
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('quiz-area').style.display='block';
+  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById('controls').style.display='flex';
+  buildQuiz();
+}
+
+// kick off
+buildQuiz();
+</script>
+</body>
+</html>
