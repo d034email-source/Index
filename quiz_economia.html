@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiz Economia — Revisão Completa</title>
+<style>
+  :root{--bg:#f8fafc;--card:#fff;--primary:#6366f1;--primary-d:#4f46e5;--success:#22c55e;--danger:#ef4444;--warn:#f59e0b;--text:#1e293b;--sub:#64748b;--border:#e2e8f0;--radius:14px;--shadow:0 4px 24px rgba(99,102,241,.08);}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
+  /* Layout */
+  #app{max-width:760px;margin:0 auto;padding:24px 16px 60px;}
+  /* Cards */
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;margin-bottom:20px;}
+  /* Buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:all .18s;}
+  .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-d);transform:translateY(-1px);}
+  .btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);} .btn-outline:hover{background:#ede9fe;}
+  .btn-sm{padding:7px 14px;font-size:.85rem;border-radius:8px;}
+  .btn-danger{background:var(--danger);color:#fff;} .btn-danger:hover{opacity:.9;}
+  .btn-success{background:var(--success);color:#fff;}
+  /* Badge */
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.4px;}
+  .badge-easy{background:#dcfce7;color:#166534;} .badge-medium{background:#fef9c3;color:#854d0e;} .badge-hard{background:#fee2e2;color:#991b1b;}
+  .badge-topic{background:#ede9fe;color:#4f46e5;}
+  /* Progress */
+  .prog-bar{background:#e2e8f0;border-radius:999px;height:8px;overflow:hidden;margin:10px 0;}
+  .prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),#a855f7);transition:width .4s cubic-bezier(.4,0,.2,1);}
+  /* Header screen */
+  .hero{text-align:center;padding:40px 24px 32px;}
+  .hero h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+  .hero p{color:var(--sub);font-size:1.05rem;}
+  .filter-row{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;}
+  .filter-btn{padding:7px 16px;border-radius:999px;font-size:.85rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--sub);transition:all .15s;}
+  .filter-btn.active{border-color:var(--primary);color:var(--primary);background:#ede9fe;}
+  /* Question card */
+  #q-number{font-size:.85rem;color:var(--sub);font-weight:600;margin-bottom:8px;}
+  #q-text{font-size:1.08rem;font-weight:600;line-height:1.6;margin-bottom:20px;}
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all .15s;font-size:.95rem;line-height:1.5;}
+  .opt:hover:not(.disabled){border-color:var(--primary);background:#f5f3ff;}
+  .opt.selected{border-color:var(--primary);background:#ede9fe;}
+  .opt.correct{border-color:var(--success);background:#f0fdf4;}
+  .opt.wrong{border-color:var(--danger);background:#fef2f2;}
+  .opt.disabled{pointer-events:none;}
+  .opt-letter{min-width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
+  .opt.correct .opt-letter{background:var(--success);color:#fff;}
+  .opt.wrong .opt-letter{background:var(--danger);color:#fff;}
+  .opt.selected:not(.correct):not(.wrong) .opt-letter{background:var(--primary);color:#fff;}
+  /* V/F */
+  .vf-row{display:flex;gap:14px;}
+  .vf-btn{flex:1;padding:16px;border-radius:10px;border:2px solid var(--border);font-size:1rem;font-weight:700;cursor:pointer;background:#fff;transition:all .15s;}
+  .vf-btn:hover:not(.disabled){border-color:var(--primary);background:#ede9fe;}
+  .vf-btn.correct{border-color:var(--success);background:#f0fdf4;color:var(--success);}
+  .vf-btn.wrong{border-color:var(--danger);background:#fef2f2;color:var(--danger);}
+  .vf-btn.selected{border-color:var(--primary);background:#ede9fe;color:var(--primary);}
+  .vf-btn.disabled{pointer-events:none;}
+  /* Feedback */
+  #feedback{margin-top:16px;padding:14px 16px;border-radius:10px;font-size:.9rem;line-height:1.55;display:none;animation:fadeIn .25s;}
+  #feedback.correct{background:#f0fdf4;border-left:4px solid var(--success);color:#166534;}
+  #feedback.wrong{background:#fef2f2;border-left:4px solid var(--danger);color:#991b1b;}
+  /* Nav */
+  .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap;gap:10px;}
+  /* Timer */
+  #timer-display{font-size:1.1rem;font-weight:700;color:var(--primary);min-width:60px;text-align:center;}
+  #timer-display.warn{color:var(--warn);}
+  #timer-display.danger{color:var(--danger);animation:pulse 1s infinite;}
+  /* Results */
+  .score-big{font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .stat-row:last-child{border:none;}
+  .perf-bar{background:#f1f5f9;border-radius:999px;height:10px;overflow:hidden;flex:1;margin:0 12px;}
+  .perf-fill{height:100%;border-radius:999px;transition:width 1s .3s;}
+  .review-item{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+  .review-head{padding:14px 16px;font-weight:600;font-size:.93rem;display:flex;align-items:center;gap:10px;}
+  .review-body{padding:0 16px 14px;font-size:.88rem;color:var(--sub);}
+  .review-body p{margin:4px 0;}
+  .r-correct{border-left:4px solid var(--success);}
+  .r-wrong{border-left:4px solid var(--danger);}
+  /* Animations */
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .screen{display:none;animation:fadeIn .3s;}
+  .screen.active{display:block;}
+  /* Responsive */
+  @media(max-width:520px){.hero h1{font-size:1.5rem;}.score-big{font-size:2.5rem;}.filter-row{gap:6px;}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- START SCREEN -->
+<div id="screen-start" class="screen active">
+  <div class="hero">
+    <h1>📚 Quiz Economia</h1>
+    <p>Balança de Pagamentos · Moeda · Economia Circular</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:14px">Filtrar por Dificuldade</h3>
+    <div class="filter-row" id="diff-filters">
+      <button class="filter-btn active" data-diff="all">Todas</button>
+      <button class="filter-btn" data-diff="easy">Fácil</button>
+      <button class="filter-btn" data-diff="medium">Médio</button>
+      <button class="filter-btn" data-diff="hard">Difícil</button>
+    </div>
+    <h3 style="margin:18px 0 14px">Filtrar por Tópico</h3>
+    <div class="filter-row" id="topic-filters">
+      <button class="filter-btn active" data-topic="all">Todos</button>
+      <button class="filter-btn" data-topic="Moeda">Moeda</button>
+      <button class="filter-btn" data-topic="Balança">Balança de Pagamentos</button>
+      <button class="filter-btn" data-topic="Circular">Economia Circular</button>
+      <button class="filter-btn" data-topic="Sistema">Sist. Financeiro</button>
+    </div>
+    <h3 style="margin:18px 0 14px">Modo</h3>
+    <div class="filter-row">
+      <button class="filter-btn active" id="mode-seq" data-mode="seq">Sequencial</button>
+      <button class="filter-btn" id="mode-rand" data-mode="rand">Embaralhado</button>
+    </div>
+    <h3 style="margin:18px 0 14px">Temporizador por questão</h3>
+    <div class="filter-row">
+      <button class="filter-btn active" data-timer="0">Sem tempo</button>
+      <button class="filter-btn" data-timer="30">30s</button>
+      <button class="filter-btn" data-timer="60">60s</button>
+      <button class="filter-btn" data-timer="90">90s</button>
+    </div>
+    <div style="margin-top:24px;text-align:center;">
+      <span id="q-count-label" style="color:var(--sub);font-size:.9rem;"></span>
+      <br><br>
+      <button class="btn btn-primary" id="btn-start" style="padding:14px 36px;font-size:1.05rem;">Iniciar Quiz →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="screen-quiz" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+    <span id="q-number"></span>
+    <span id="timer-display"></span>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="card" style="margin-top:16px">
+    <div id="badge-row" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <div id="q-text"></div>
+    <div id="q-options"></div>
+    <div id="feedback"></div>
+    <div class="nav-row">
+      <button class="btn btn-outline btn-sm" id="btn-prev">← Anterior</button>
+      <button class="btn btn-primary btn-sm" id="btn-next">Próxima →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="screen-results" class="screen">
+  <div class="card" style="text-align:center;padding:36px 28px;">
+    <p style="color:var(--sub);font-weight:600;margin-bottom:4px;">Resultado Final</p>
+    <div class="score-big" id="res-score"></div>
+    <p style="font-size:1.1rem;color:var(--sub);margin:8px 0 0" id="res-sub"></p>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:16px">📊 Desempenho por Dificuldade</h3>
+    <div id="perf-diff"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:16px">📚 Desempenho por Tópico</h3>
+    <div id="perf-topic"></div>
+  </div>
+  <div class="card" id="rec-card" style="display:none">
+    <h3 style="margin-bottom:12px;color:var(--warn)">⚠️ Recomendações de Revisão</h3>
+    <div id="rec-list"></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:16px">📝 Revisão dos Erros</h3>
+    <div id="error-review"></div>
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <button class="btn btn-primary" id="btn-restart">🔄 Reiniciar Quiz</button>
+  </div>
+</div>
+
+</div>
+<script>
+// ===== QUESTION BANK =====
+const ALL_QUESTIONS = [
+  // ---------- MOEDA ----------
+  {id:1,topic:'Moeda',diff:'easy',type:'mc',
+   q:'Quais são as três funções básicas da moeda?',
+   opts:['Intermediária de trocas, unidade de conta e reserva de valor','Depósito bancário, crédito e liquidez','Emissão, fiscalização e regulação','Lastro, câmbio e poupança'],
+   ans:0, exp:'As três funções clássicas são: meio de troca (intermediária), unidade de conta (preços/contratos) e reserva de valor (preservação ao longo do tempo).'},
+
+  {id:2,topic:'Moeda',diff:'easy',type:'mc',
+   q:'O que é "escambo"?',
+   opts:['Troca direta de mercadoria por mercadoria, sem intermediário monetário','Sistema bancário de câmbio entre países','Emissão de moeda pelo Banco Central sem lastro','Modalidade de crédito de curto prazo'],
+   ans:0, exp:'Escambo é a troca direta entre mercadorias, sem moeda. Exige dupla coincidência de desejos.'},
+
+  {id:3,topic:'Moeda',diff:'easy',type:'vf',
+   q:'A nota de R$ 100 possui valor intrínseco igual ao valor que representa, ou seja, "vale" exatamente R$ 100 em matéria-prima.',
+   ans:false, exp:'Nas economias modernas, as cédulas não têm valor intrínseco; elas apenas REPRESENTAM poder de compra.'},
+
+  {id:4,topic:'Moeda',diff:'medium',type:'mc',
+   q:'A "dupla coincidência de desejos" é uma limitação de qual sistema?',
+   opts:['Sistema bancário de reservas fracionárias','Troca por escambo','Sistema de metas de inflação','Mercado de capitais'],
+   ans:1, exp:'No escambo, para uma troca ocorrer, ambas as partes precisam querer exatamente o que a outra oferece — a chamada dupla coincidência de desejos.'},
+
+  {id:5,topic:'Moeda',diff:'medium',type:'mc',
+   q:'A função "unidade de conta" da moeda se manifesta principalmente em:',
+   opts:['Reservas internacionais do Banco Central','Preços de produtos e valores em contratos','Volume de papel-moeda emitido','Taxa de recolhimento compulsório'],
+   ans:1, exp:'A unidade de conta aparece nos preços grafados em etiquetas e nos valores monetários inseridos em contratos de trabalho e serviços.'},
+
+  {id:6,topic:'Moeda',diff:'medium',type:'mc',
+   q:'Em períodos de inflação elevada, qual função da moeda é mais prejudicada?',
+   opts:['Intermediária de trocas','Unidade de conta','Reserva de valor','Meio de pagamento internacional'],
+   ans:2, exp:'A inflação corrói o poder de compra, comprometendo a capacidade da moeda de preservar valor ao longo do tempo (reserva de valor).'},
+
+  {id:7,topic:'Moeda',diff:'hard',type:'mc',
+   q:'[PEGADINHA] A "moeda-papel" e o "papel-moeda" são a mesma coisa: documentos emitidos com lastro 100% em metais preciosos.',
+   opts:['Verdadeiro; ambos exigem lastro integral de metais preciosos','Falso; moeda-papel tem lastro integral (certificado de depósito), enquanto papel-moeda (fiduciário) não exige lastro integral','Falso; moeda-papel não tem lastro algum, ao contrário do papel-moeda','Verdadeiro; a distinção é apenas histórica e sem relevância conceitual'],
+   ans:1, exp:'Moeda-papel = certificado de depósito com lastro de 100%. Papel-moeda (moeda fiduciária) surgiu quando as casas de custódia perceberam que nem todos resgatavam ao mesmo tempo e passaram a emitir sem lastro integral.'},
+
+  {id:8,topic:'Moeda',diff:'easy',type:'mc',
+   q:'Qual era a função das "Casas de Custódia" na história da moeda?',
+   opts:['Regular a taxa básica de juros da economia','Guardar metais preciosos e emitir certificados de depósito (moeda-papel)','Fiscalizar bancos comerciais e recolher compulsório','Financiar o déficit público via emissão de títulos'],
+   ans:1, exp:'As Casas de Custódia guardavam ouro/prata dos comerciantes e emitiam certificados representativos — origem da moeda-papel.'},
+
+  {id:9,topic:'Moeda',diff:'hard',type:'mc',
+   q:'Qual sequência CORRETA representa a evolução histórica das formas de moeda?',
+   opts:['Moeda metálica → Escambo → Moeda-papel → Papel-moeda → Moeda bancária','Escambo → Moeda-mercadoria → Moeda metálica → Moeda-papel → Papel-moeda → Moeda bancária','Escambo → Papel-moeda → Moeda metálica → Moeda-mercadoria → Moeda bancária','Moeda bancária → Moeda-papel → Moeda metálica → Escambo'],
+   ans:1, exp:'A progressão histórica é: Escambo → Moeda-mercadoria (gado, sal) → Moeda metálica (ouro/prata) → Moeda-papel (lastro 100%) → Papel-moeda (fiduciário) → Moeda bancária/escritural.'},
+
+  {id:10,topic:'Moeda',diff:'medium',type:'vf',
+   q:'Características físicas da moeda incluem divisibilidade, durabilidade, transportabilidade, manuseabilidade e dificuldade de falsificação.',
+   ans:true, exp:'Correto. Além das características econômicas (custo de estocagem e transação ≈ zero), a moeda exige essas características físicas.'},
+
+  // ---------- SISTEMA FINANCEIRO ----------
+  {id:11,topic:'Sistema',diff:'easy',type:'mc',
+   q:'O que é M1 na classificação dos agregados monetários?',
+   opts:['Papel-moeda emitido + depósitos a prazo','Papel-moeda em poder do público + depósitos à vista nos bancos comerciais','M2 + quotas de renda fixa + operações compromissadas','M3 + títulos públicos de alta liquidez'],
+   ans:1, exp:'M1 = PMPP + Depósitos à vista. É o agregado de maior liquidez imediata.'},
+
+  {id:12,topic:'Sistema',diff:'medium',type:'mc',
+   q:'Qual agregado monetário inclui M2, quotas de fundos de renda fixa e operações compromissadas no SELIC?',
+   opts:['M1','M2','M3','M4'],
+   ans:2, exp:'M3 = M2 + quotas de fundos de renda fixa + operações compromissadas registradas no SELIC.'},
+
+  {id:13,topic:'Sistema',diff:'hard',type:'mc',
+   q:'[PEGADINHA] O "multiplicador bancário" representa a capacidade ilimitada dos bancos de criar moeda, pois não há reserva compulsória.',
+   opts:['Verdadeiro; em teoria, bancos podem criar moeda sem limite','Falso; o multiplicador representa o LIMITE do processo de multiplicação, restringido pelo compulsório e pelo encaixe técnico','Falso; somente o Banco Central pode criar moeda, não os bancos comerciais','Verdadeiro; o compulsório não afeta a criação de moeda escritural'],
+   ans:1, exp:'O multiplicador bancário representa o LIMITE da expansão monetária. Compulsório (recolhido ao BC) e encaixe técnico restringem o processo.'},
+
+  {id:14,topic:'Sistema',diff:'medium',type:'mc',
+   q:'Qual segmento de mercado atende às necessidades de financiamento de longo prazo relacionadas a investimentos em capital fixo?',
+   opts:['Mercado Monetário','Mercado de Crédito','Mercado de Capitais','Mercado Cambial'],
+   ans:2, exp:'O Mercado de Capitais financia médio e longo prazo (capital fixo). Inclui as bolsas de valores e é majoritariamente intermediado por instituições não bancárias.'},
+
+  {id:15,topic:'Sistema',diff:'easy',type:'mc',
+   q:'Qual é a principal função do Banco Central enquanto "banqueiro dos bancos"?',
+   opts:['Emitir papel-moeda para o público diretamente','Fiscalizar as operações bancárias na administração dos recursos dos correntistas','Conceder crédito diretamente a empresas e consumidores','Determinar os preços dos títulos no mercado de capitais'],
+   ans:1, exp:'Na função de "banqueiro dos bancos", o BC fiscaliza as operações bancárias e a gestão dos recursos confiados pelos correntistas aos bancos comerciais.'},
+
+  {id:16,topic:'Sistema',diff:'medium',type:'mc',
+   q:'O que é "encaixe técnico" no sistema bancário?',
+   opts:['Parte dos depósitos repassada ao Banco Central como compulsório','Reserva que o banco comercial mantém para sua própria liquidez futura','Emissão de título de dívida pelo banco para captar recursos','Volume total de crédito concedido pelos bancos a pessoas físicas'],
+   ans:1, exp:'Encaixe técnico é a parcela dos depósitos retida pelo banco comercial como "fundo de caixa" para garantir liquidez. Difere do compulsório (que vai ao BC).'},
+
+  {id:17,topic:'Sistema',diff:'hard',type:'mc',
+   q:'[PEGADINHA] Segundo Carvalho et al., a principal diferença entre bancos comerciais e bancos de investimento é que apenas os bancos de investimento captam depósitos à vista.',
+   opts:['Correto; bancos de investimento são os únicos a captar depósitos à vista','Incorreto; bancos comerciais captam depósitos à vista E a prazo; bancos de investimento captam principalmente a prazo e emitem títulos','Correto; ambos captam à vista, mas só bancos de investimento emitem títulos','Incorreto; bancos de investimento são proibidos de captar qualquer depósito'],
+   ans:1, exp:'Bancos comerciais captam depósitos à vista (e a prazo). Bancos de investimento dependem principalmente de depósitos a prazo e emissão de títulos.'},
+
+  {id:18,topic:'Sistema',diff:'medium',type:'vf',
+   q:'A intermediação financeira canaliza recursos dos agentes superavitários para os deficitários, operacionalizando os fluxos de financiamento indireto da economia.',
+   ans:true, exp:'Correto. Essa é exatamente a função essencial dos intermediários financeiros, independentemente da estrutura institucional do sistema.'},
+
+  // ---------- BALANÇA DE PAGAMENTOS ----------
+  {id:19,topic:'Balança',diff:'easy',type:'mc',
+   q:'Qual foi o saldo aproximado da conta corrente do Brasil em 2020 e qual o principal fator explicativo?',
+   opts:['Superávit de US$ 5,5 bi; aumento das exportações de manufaturados','Déficit de US$ 5,5 bi; queda nas importações e aumento de exportações agrícolas pela pandemia','Déficit de US$ 22,5 bi; recuperação da economia global','Déficit de US$ 61 bi; aumento das importações de energia'],
+   ans:1, exp:'Em 2020 o déficit foi de apenas ~US$ 5,5 bi — o menor da série — graças à pandemia que reduziu importações e elevou exportações agrícolas.'},
+
+  {id:20,topic:'Balança',diff:'easy',type:'mc',
+   q:'Qual ano registrou o MAIOR déficit em conta corrente do Brasil no período 2019-2023?',
+   opts:['2019 (−US$ 50 bi)','2021 (−US$ 22,5 bi)','2022 (−US$ 61 bi)','2023 (−US$ 48 bi)'],
+   ans:2, exp:'2022 foi o pior ano, com déficit de ~US$ 61 bi, puxado principalmente pelo crescimento nas importações de energia.'},
+
+  {id:21,topic:'Balança',diff:'medium',type:'mc',
+   q:'Um déficit contínuo na balança de pagamentos tende a gerar qual sequência de efeitos?',
+   opts:['Valorização da moeda → deflação → queda dos juros → crescimento','Desvalorização da moeda → inflação → aumento dos juros → desaceleração do crescimento','Aumento das exportações → superávit comercial → queda da dívida externa','Redução dos gastos públicos → superávit fiscal → estabilidade cambial'],
+   ans:1, exp:'O déficit pressiona a moeda local para baixo, encarece importados (inflação), forçando o BC a elevar juros, o que desacelera o crescimento.'},
+
+  {id:22,topic:'Balança',diff:'medium',type:'mc',
+   q:'Qual dos seguintes é um efeito do aumento da dívida externa decorrente de déficits contínuos na balança de pagamentos?',
+   opts:['Redução do risco-país e maior atração de investimentos estrangeiros','Risco de default e perda de confiança de investidores estrangeiros','Queda nas taxas de juros domésticas','Valorização da moeda local'],
+   ans:1, exp:'Se a dívida externa se torna insustentável, o risco de calote (default) aumenta, afastando investidores e reduzindo o fluxo de capitais.'},
+
+  {id:23,topic:'Balança',diff:'hard',type:'mc',
+   q:'[PEGADINHA] O déficit na balança de pagamentos do Brasil em 2020 foi o maior da série 2019-2023, pois a pandemia interrompeu completamente as exportações.',
+   opts:['Verdadeiro; a pandemia eliminou as exportações em 2020','Falso; 2020 teve o MENOR déficit (~US$ 5,5 bi) porque a pandemia reduziu importações e AUMENTOU exportações agrícolas','Verdadeiro; apenas produtos primários foram exportados, gerando superávit','Falso; 2020 teve superávit de US$ 5,5 bi, o único superávit da série'],
+   ans:1, exp:'Pegadinha clássica: a pandemia REDUZIU importações e AUMENTOU exportações agrícolas, gerando o menor déficit da série (não superávit).'},
+
+  {id:24,topic:'Balança',diff:'medium',type:'vf',
+   q:'Déficits consecutivos na conta corrente podem levar o país a se tornar mais dependente de capital externo, elevando sua vulnerabilidade em tempos de instabilidade global.',
+   ans:true, exp:'Correto. A dependência de fluxos externos para financiar o déficit aumenta a vulnerabilidade a choques externos e crises de confiança.'},
+
+  {id:25,topic:'Balança',diff:'hard',type:'mc',
+   q:'Qual afirmação descreve corretamente os "ajustes estruturais" necessários quando o déficit na balança de pagamentos é persistente?',
+   opts:['Aumentar ainda mais as importações para estimular a competição interna','Reduzir compulsoriamente todas as exportações para equilibrar a conta','Aumentar a competitividade, diversificar a economia e incentivar exportações','Eliminar o câmbio flutuante e adotar câmbio fixo imediatamente'],
+   ans:2, exp:'Os ajustes estruturais necessários incluem: aumentar competitividade, diversificar a pauta exportadora e reduzir dependência de importações.'},
+
+  // ---------- ECONOMIA CIRCULAR ----------
+  {id:26,topic:'Circular',diff:'easy',type:'mc',
+   q:'O que é Economia Circular?',
+   opts:['Modelo linear de produção baseado em extração, uso e descarte','Modelo que visa reduzir, reutilizar e reciclar materiais, minimizando resíduos e maximizando a eficiência dos recursos','Sistema financeiro voltado para investimentos sustentáveis','Política macroeconômica de controle de emissão monetária'],
+   ans:1, exp:'Economia Circular é o modelo que substitui o "extrair-produzir-descartar" por ciclos de redução, reutilização e reciclagem de materiais.'},
+
+  {id:27,topic:'Circular',diff:'easy',type:'mc',
+   q:'Quando surgiu a Economia Circular como alternativa ao modelo linear?',
+   opts:['Década de 1930, após a Grande Depressão','Década de 1970, com foco no uso consciente dos recursos naturais','Século XIX, durante a Revolução Industrial','Anos 2000, impulsionada pelos acordos de Paris'],
+   ans:1, exp:'A Economia Circular surge nos anos 70 com o propósito de elevar o ciclo de vida das matérias-primas por meio de reutilização e reciclagem.'},
+
+  {id:28,topic:'Circular',diff:'easy',type:'mc',
+   q:'Quais são os "3Rs" da Economia Circular?',
+   opts:['Reciclar, Recuperar, Reparar','Reduzir, Reutilizar, Reciclar','Refletir, Reduzir, Reutilizar','Reaproveitar, Renovar, Responsabilizar'],
+   ans:2, exp:'Os 3Rs são: Refletir (valorizar os recursos), Reduzir (usar menos recursos) e Reutilizar (reaproveitar materiais com potencial de remanufatura).'},
+
+  {id:29,topic:'Circular',diff:'medium',type:'mc',
+   q:'O que é "Pegada Ambiental"?',
+   opts:['Indicador de emissão de carbono apenas por veículos automotores','Medida que avalia o impacto das atividades humanas no meio ambiente, quantificando recursos usados e resíduos gerados','Taxa cobrada por órgãos ambientais sobre empresas poluidoras','Certificação emitida a empresas que aderem à Economia Circular'],
+   ans:1, exp:'Pegada Ambiental mede o impacto humano no ambiente: recursos naturais utilizados + resíduos gerados pelas atividades.'},
+
+  {id:30,topic:'Circular',diff:'medium',type:'mc',
+   q:'Qual é uma consequência NEGATIVA do modelo econômico linear?',
+   opts:['Incentivo à inovação e ao design sustentável','Redução do desperdício industrial','Risco de esgotamento de matérias-primas e aumento dos custos de extração','Fortalecimento de políticas públicas de sustentabilidade'],
+   ans:2, exp:'O modelo linear eleva o risco de esgotamento de matérias-primas; com menos recursos disponíveis, os custos de extração sobem, gerando instabilidade.'},
+
+  {id:31,topic:'Circular',diff:'medium',type:'vf',
+   q:'Na Economia Circular, a geração de resíduos é completamente eliminada, chegando a zero.',
+   ans:false, exp:'Incorreto. Na EC a geração de resíduos é MÍNIMA, não necessariamente zero. O objetivo é reduzir ao máximo, não uma eliminação total.'},
+
+  {id:32,topic:'Circular',diff:'hard',type:'mc',
+   q:'[PEGADINHA] A Economia Circular tem como principal impulso o crescimento econômico, sendo a preservação ambiental um benefício secundário.',
+   opts:['Correto; o crescimento econômico é o objetivo central da EC','Incorreto; a preservação ambiental é destacada como o PRINCIPAL impulso da EC, visando conservação para gerações futuras','Correto; a inovação tecnológica é o impulso central, não o ambiental','Incorreto; a EC não gera crescimento econômico, apenas benefícios ambientais'],
+   ans:1, exp:'Pegadinha: a preservação ambiental é o PRINCIPAL impulso da EC. O crescimento econômico é um benefício importante, mas não o impulso central.'},
+
+  {id:33,topic:'Circular',diff:'hard',type:'mc',
+   q:'Qual prática da Economia Circular envolve "projetar produtos e sistemas que facilitem a reutilização e reciclagem desde a concepção"?',
+   opts:['Gestão de efluentes','Design circular','Economia compartilhada','Remanufatura de componentes'],
+   ans:1, exp:'O design circular implica pensar no ciclo de vida completo do produto desde sua concepção, facilitando reutilização, reciclagem e recuperação de materiais.'},
+
+  {id:34,topic:'Circular',diff:'medium',type:'mc',
+   q:'Qual dos seguintes benefícios a Economia Circular oferece para as EMPRESAS especificamente?',
+   opts:['Apenas redução de custos com matéria-prima','Redução de custos, aumento da eficiência e melhoria da imagem institucional','Somente novos empregos no setor de reciclagem','Apenas cumprimento de metas governamentais de sustentabilidade'],
+   ans:1, exp:'Para empresas, a EC traz: redução de custos, aumento de eficiência operacional e melhoria da imagem — além de novas oportunidades de negócio.'},
+
+  {id:35,topic:'Circular',diff:'easy',type:'vf',
+   q:'O modelo econômico linear, predominante desde a Revolução Industrial, segue o padrão: extrair → produzir → descartar.',
+   ans:true, exp:'Correto. O modelo linear é definido exatamente por essa sequência linear sem reaproveitamento, gerando volume crescente de resíduos.'},
+];
+
+// ===== STATE =====
+let state = {
+  questions:[],
+  current:0,
+  answers:{},
+  filterDiff:'all',
+  filterTopic:'all',
+  mode:'seq',
+  timerSec:0,
+  timerInterval:null,
+  timeLeft:0
+};
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function buildQuestions(){
+  let qs = ALL_QUESTIONS.filter(q=>
+    (state.filterDiff==='all'||q.diff===state.filterDiff)&&
+    (state.filterTopic==='all'||q.topic===state.filterTopic)
+  );
+  // Shuffle options for mc questions
+  qs = qs.map(q=>{
+    if(q.type==='mc'){
+      const indexed = q.opts.map((o,i)=>({text:o,orig:i}));
+      const shuffled = shuffle(indexed);
+      return {...q, opts:shuffled.map(s=>s.text), ans:shuffled.findIndex(s=>s.orig===q.ans)};
+    }
+    return q;
+  });
+  if(state.mode==='rand') qs = shuffle(qs);
+  return qs;
+}
+
+function updateCountLabel(){
+  let n = ALL_QUESTIONS.filter(q=>
+    (state.filterDiff==='all'||q.diff===state.filterDiff)&&
+    (state.filterTopic==='all'||q.topic===state.filterTopic)
+  ).length;
+  document.getElementById('q-count-label').textContent = n+' questões selecionadas';
+}
+
+// Filter buttons logic
+function setupFilters(){
+  document.querySelectorAll('#diff-filters .filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#diff-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.filterDiff = btn.dataset.diff;
+      updateCountLabel();
+    });
+  });
+  document.querySelectorAll('#topic-filters .filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('#topic-filters .filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.filterTopic = btn.dataset.topic;
+      updateCountLabel();
+    });
+  });
+  document.querySelectorAll('[data-mode]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.mode = btn.dataset.mode;
+    });
+  });
+  document.querySelectorAll('[data-timer]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('[data-timer]').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      state.timerSec = parseInt(btn.dataset.timer);
+    });
+  });
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+}
+
+function startQuiz(){
+  state.questions = buildQuestions();
+  if(!state.questions.length){alert('Nenhuma questão encontrada com esses filtros.');return;}
+  state.current = 0;
+  state.answers = {};
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = state.questions[state.current];
+  const total = state.questions.length;
+  const pct = ((state.current)/total)*100;
+
+  document.getElementById('q-number').textContent = `Questão ${state.current+1} de ${total}`;
+  document.getElementById('prog-fill').style.width = pct+'%';
+
+  // Badge
+  const diffLabel = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
+  const diffClass = {easy:'badge-easy',medium:'badge-medium',hard:'badge-hard'};
+  document.getElementById('badge-row').innerHTML =
+    `<span class="badge ${diffClass[q.diff]}">${diffLabel[q.diff]}</span><span class="badge badge-topic">${q.topic}</span>`;
+
+  document.getElementById('q-text').textContent = q.q;
+  const fb = document.getElementById('feedback');
+  fb.style.display='none';fb.className='';
+
+  const answered = state.answers[state.current] !== undefined;
+
+  if(q.type==='vf'){
+    document.getElementById('q-options').innerHTML = `
+      <div class="vf-row">
+        <button class="vf-btn" id="vf-true">✅ Verdadeiro</button>
+        <button class="vf-btn" id="vf-false">❌ Falso</button>
+      </div>`;
+    if(answered){
+      applyVF(q, state.answers[state.current]);
+    } else {
+      document.getElementById('vf-true').addEventListener('click',()=>answerVF(true));
+      document.getElementById('vf-false').addEventListener('click',()=>answerVF(false));
+    }
+  } else {
+    const letters = ['A','B','C','D'];
+    document.getElementById('q-options').innerHTML = '<div class="options">'+
+      q.opts.map((o,i)=>`<div class="opt" data-i="${i}"><span class="opt-letter">${letters[i]}</span><span>${o}</span></div>`).join('')+'</div>';
+    if(answered){
+      applyMC(q, state.answers[state.current]);
+    } else {
+      document.querySelectorAll('.opt').forEach(el=>{
+        el.addEventListener('click',()=>answerMC(parseInt(el.dataset.i)));
+      });
+    }
+  }
+
+  // Nav buttons
+  document.getElementById('btn-prev').style.visibility = state.current>0?'visible':'hidden';
+  document.getElementById('btn-next').textContent = state.current===total-1?'Ver Resultado →':'Próxima →';
+
+  // Timer
+  clearInterval(state.timerInterval);
+  const td = document.getElementById('timer-display');
+  if(state.timerSec && !answered){
+    state.timeLeft = state.timerSec;
+    td.textContent = fmtTime(state.timeLeft);
+    td.className = '';
+    state.timerInterval = setInterval(()=>{
+      state.timeLeft--;
+      td.textContent = fmtTime(state.timeLeft);
+      if(state.timeLeft<=10) td.className='warn';
+      if(state.timeLeft<=5) td.className='danger';
+      if(state.timeLeft<=0){
+        clearInterval(state.timerInterval);
+        // auto-skip with no answer
+        if(state.answers[state.current]===undefined){
+          state.answers[state.current] = null;
+          showFeedback(q, null);
+          lockOptions();
+        }
+      }
+    },1000);
+  } else {
+    td.textContent = '';
+  }
+}
+
+function fmtTime(s){const m=Math.floor(s/60);return (m?m+'m':'')+String(s%60).padStart(2,'0')+'s';}
+
+function answerMC(i){
+  clearInterval(state.timerInterval);
+  state.answers[state.current] = i;
+  applyMC(state.questions[state.current], i);
+  showFeedback(state.questions[state.current], i);
+}
+function applyMC(q,i){
+  document.querySelectorAll('.opt').forEach((el,idx)=>{
+    el.classList.add('disabled');
+    if(idx===q.ans) el.classList.add('correct');
+    else if(idx===i && i!==q.ans) el.classList.add('wrong');
+    else if(idx===i) el.classList.add('selected');
+  });
+  if(i===null) document.querySelectorAll('.opt').forEach(el=>el.classList.add('disabled'));
+}
+
+function answerVF(val){
+  clearInterval(state.timerInterval);
+  state.answers[state.current] = val;
+  applyVF(state.questions[state.current], val);
+  showFeedback(state.questions[state.current], val);
+}
+function applyVF(q,val){
+  const bt = document.getElementById('vf-true');
+  const bf = document.getElementById('vf-false');
+  if(!bt||!bf) return;
+  bt.classList.add('disabled'); bf.classList.add('disabled');
+  if(q.ans===true) bt.classList.add('correct'); else bt.classList.add(val===true?'wrong':'disabled');
+  if(q.ans===false) bf.classList.add('correct'); else bf.classList.add(val===false?'wrong':'disabled');
+}
+function lockOptions(){
+  document.querySelectorAll('.opt,.vf-btn').forEach(el=>el.classList.add('disabled'));
+}
+
+function showFeedback(q,ans){
+  const fb = document.getElementById('feedback');
+  let correct = q.type==='vf' ? ans===q.ans : ans===q.ans;
+  fb.className = correct?'correct':'wrong';
+  fb.style.display = 'block';
+  fb.textContent = (correct?'✅ Correto! ':'❌ Incorreto. ') + q.exp;
+}
+
+// Nav
+document.getElementById('btn-next').addEventListener('click',()=>{
+  if(state.current===state.questions.length-1) showResults();
+  else { state.current++; renderQuestion(); }
+});
+document.getElementById('btn-prev').addEventListener('click',()=>{
+  if(state.current>0){ state.current--; renderQuestion(); }
+});
+
+// Start
+document.getElementById('btn-start').addEventListener('click',startQuiz);
+document.getElementById('btn-restart').addEventListener('click',()=>{showScreen('screen-start');updateCountLabel();});
+
+// ===== RESULTS =====
+function showResults(){
+  clearInterval(state.timerInterval);
+  const qs = state.questions;
+  const total = qs.length;
+  let correct = 0;
+
+  qs.forEach((q,i)=>{
+    const a = state.answers[i];
+    if(q.type==='vf'?a===q.ans:a===q.ans) correct++;
+  });
+
+  const pct = Math.round((correct/total)*100);
+  document.getElementById('res-score').textContent = pct+'%';
+  document.getElementById('res-sub').textContent = `${correct} acertos de ${total} questões`;
+
+  // Perf by difficulty
+  const diffs = ['easy','medium','hard'];
+  const dLabels = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
+  const dColors = {easy:'#22c55e',medium:'#f59e0b',hard:'#ef4444'};
+  let diffHTML = '';
+  diffs.forEach(d=>{
+    const dqs = qs.filter(q=>q.diff===d);
+    if(!dqs.length) return;
+    const dc = dqs.filter((q,i)=>{const idx=qs.indexOf(q);const a=state.answers[idx];return q.type==='vf'?a===q.ans:a===q.ans;}).length;
+    const dp = Math.round((dc/dqs.length)*100);
+    diffHTML += `<div class="stat-row"><span style="min-width:60px">${dLabels[d]}</span>
+      <div class="perf-bar"><div class="perf-fill" style="width:${dp}%;background:${dColors[d]}"></div></div>
+      <span style="min-width:70px;text-align:right;font-weight:700">${dc}/${dqs.length} (${dp}%)</span></div>`;
+  });
+  document.getElementById('perf-diff').innerHTML = diffHTML;
+
+  // Perf by topic
+  const topics = [...new Set(qs.map(q=>q.topic))];
+  let topicHTML = '';
+  let lowTopics = [];
+  topics.forEach(t=>{
+    const tqs = qs.filter(q=>q.topic===t);
+    const tc = tqs.filter((q)=>{const idx=qs.indexOf(q);const a=state.answers[idx];return q.type==='vf'?a===q.ans:a===q.ans;}).length;
+    const tp = Math.round((tc/tqs.length)*100);
+    topicHTML += `<div class="stat-row"><span style="min-width:110px;font-size:.9rem">${t}</span>
+      <div class="perf-bar"><div class="perf-fill" style="width:${tp}%;background:var(--primary)"></div></div>
+      <span style="min-width:70px;text-align:right;font-weight:700">${tc}/${tqs.length} (${tp}%)</span></div>`;
+    if(tp<60) lowTopics.push({t,tp});
+  });
+  document.getElementById('perf-topic').innerHTML = topicHTML;
+
+  // Recommendations
+  const rc = document.getElementById('rec-card');
+  if(lowTopics.length){
+    rc.style.display='block';
+    document.getElementById('rec-list').innerHTML = lowTopics.map(x=>`
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:8px;margin-bottom:8px;font-size:.9rem">
+        ⚠️ <strong>${x.t}</strong> — Aproveitamento ${x.tp}%. Recomendamos revisar este tópico.
+      </div>`).join('');
+  } else rc.style.display='none';
+
+  // Error review
+  let errHTML = '';
+  qs.forEach((q,i)=>{
+    const a = state.answers[i];
+    const isCorrect = q.type==='vf' ? a===q.ans : a===q.ans;
+    if(!isCorrect){
+      const letters=['A','B','C','D'];
+      let marked = a===null||a===undefined ? '(sem resposta)' : (q.type==='vf' ? (a?'Verdadeiro':'Falso') : `${letters[a]}) ${q.opts[a]}`);
+      let correct = q.type==='vf' ? (q.ans?'Verdadeiro':'Falso') : `${letters[q.ans]}) ${q.opts[q.ans]}`;
+      errHTML += `<div class="review-item r-wrong">
+        <div class="review-head">❌ <span>${q.q}</span></div>
+        <div class="review-body">
+          <p>📌 Sua resposta: <strong style="color:var(--danger)">${marked}</strong></p>
+          <p>✅ Resposta correta: <strong style="color:var(--success)">${correct}</strong></p>
+          <p style="margin-top:6px;color:var(--text)">${q.exp}</p>
+        </div></div>`;
+    }
+  });
+  document.getElementById('error-review').innerHTML = errHTML || '<p style="color:var(--success);font-weight:600">🎉 Parabéns! Nenhum erro a revisar.</p>';
+
+  showScreen('screen-results');
+}
+
+// Init
+setupFilters();
+updateCountLabel();
+</script>
+</body>
+</html>
