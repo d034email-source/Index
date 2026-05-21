@@ -1,766 +1,307 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz · Percepção & Motivação</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:        #faf8f5;
-  --card:      #ffffff;
-  --ink:       #1c1a17;
-  --muted:     #7a7166;
-  --border:    #e8e4dd;
-  --accent:    #c45c12;
-  --accent-l:  #fdf2ea;
-  --blue:      #1e4d8c;
-  --blue-l:    #eaf0f9;
-  --easy:      #2a7a4b;
-  --easy-bg:   #eaf5ee;
-  --med:       #9a6e00;
-  --med-bg:    #fdf8e3;
-  --hard:      #b52a4a;
-  --hard-bg:   #fdedf1;
-  --correct:   #2a7a4b;
-  --wrong:     #b52a4a;
-  --radius:    16px;
-  --shadow:    0 4px 24px rgba(28,26,23,.08);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
-body {
-  font-family:'Plus Jakarta Sans',sans-serif;
-  background:var(--bg);
-  color:var(--ink);
-  min-height:100vh;
-  font-size:15px;
-  line-height:1.6;
-}
-
-/* ── STRIPE HEADER ── */
-header {
-  background: linear-gradient(135deg,#1c1a17 60%,#2e2820);
-  padding: 0 32px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  border-bottom: 1px solid rgba(255,255,255,.06);
-}
-.logo-pill {
-  background: var(--accent);
-  border-radius: 8px;
-  padding: 4px 11px;
-  font-family:'Fraunces',serif;
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: .04em;
-  flex-shrink:0;
-}
-header h1 {
-  font-family:'Fraunces',serif;
-  font-size: clamp(14px,2vw,19px);
-  font-weight: 600;
-  color: #fff;
-  flex:1;
-  letter-spacing:-.02em;
-}
-#prog-wrap { display:flex;align-items:center;gap:10px;min-width:160px; }
-#prog-track {
-  flex:1;height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;
-}
-#prog-fill {
-  height:100%;background:var(--accent);border-radius:99px;
-  transition:width .4s cubic-bezier(.4,0,.2,1);width:0;
-}
-#prog-lbl { font-size:12px;color:rgba(255,255,255,.55);white-space:nowrap; }
-
-/* ── CONTROLS ── */
-#controls {
-  max-width:860px;margin:24px auto 0;padding:0 20px;
-  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
-}
-.flabel {
-  font-size:11px;font-weight:600;letter-spacing:.06em;
-  text-transform:uppercase;color:var(--muted);
-}
-.chip {
-  border:1.5px solid var(--border);background:var(--card);border-radius:99px;
-  padding:5px 15px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;
-  cursor:pointer;color:var(--ink);transition:all .16s;font-weight:500;
-}
-.chip:hover{background:var(--border);}
-.chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
-.chip.e.active{background:var(--easy);border-color:var(--easy);}
-.chip.m.active{background:var(--med);border-color:var(--med);}
-.chip.h.active{background:var(--hard);border-color:var(--hard);}
-.vline{width:1px;height:22px;background:var(--border);}
-.shuffle-wrap {
-  margin-left:auto;display:flex;align-items:center;gap:8px;
-  font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none;
-}
-.tog-track {
-  width:34px;height:18px;background:var(--border);border-radius:99px;
-  position:relative;transition:background .2s;flex-shrink:0;
-}
-.tog-track.on{background:var(--accent);}
-.tog-thumb {
-  position:absolute;top:3px;left:3px;width:12px;height:12px;
-  border-radius:50%;background:#fff;transition:left .2s;
-  box-shadow:0 1px 3px rgba(0,0,0,.25);
-}
-.tog-track.on .tog-thumb{left:19px;}
-
-/* ── WRAPPER ── */
-#wrap { max-width:860px;margin:0 auto;padding:24px 20px 80px; }
-
-/* ── START SCREEN ── */
-#start {
-  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  border:1.5px solid var(--border);padding:52px 44px;text-align:center;
-  margin-top:12px;
-}
-#start h2 {
-  font-family:'Fraunces',serif;font-size:clamp(22px,4vw,32px);font-weight:900;
-  letter-spacing:-.03em;margin-bottom:10px;
-}
-#start h2 em{color:var(--accent);font-style:normal;}
-#start p{color:var(--muted);font-size:14px;margin-bottom:32px;max-width:420px;margin-left:auto;margin-right:auto;}
-.stat-row{display:flex;justify-content:center;gap:16px;margin-bottom:36px;flex-wrap:wrap;}
-.stat-box{
-  background:var(--bg);border-radius:12px;padding:14px 20px;min-width:80px;
-  border:1.5px solid var(--border);text-align:center;
-}
-.stat-box .n{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1;}
-.stat-box .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
-.btn-go {
-  background:var(--accent);color:#fff;border:none;border-radius:12px;
-  padding:15px 40px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;
-  cursor:pointer;transition:transform .15s,background .15s;letter-spacing:-.01em;
-}
-.btn-go:hover{background:#a84d0e;transform:translateY(-2px);}
-
-/* ── QUESTION CARD ── */
-.q-card {
-  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
-  border:1.5px solid var(--border);padding:34px 36px 28px;
-  animation:rise .22s ease;
-}
-@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.qnum{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
-.bdg{border-radius:6px;padding:3px 8px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
-.bdg-e{background:var(--easy-bg);color:var(--easy);}
-.bdg-m{background:var(--med-bg);color:var(--med);}
-.bdg-h{background:var(--hard-bg);color:var(--hard);}
-.bdg-tp{background:var(--bg);color:var(--muted);font-size:10.5px;border-radius:6px;padding:3px 8px;font-weight:500;}
-.bdg-trick{background:#fff3e0;color:#c45c12;font-size:10px;border-radius:6px;padding:2px 7px;font-weight:700;}
-
-.q-text{font-size:16px;font-weight:500;line-height:1.6;margin-bottom:22px;color:var(--ink);}
-
-/* ── OPTIONS (4-choice) ── */
-.opts{display:flex;flex-direction:column;gap:9px;}
-.opt{
-  display:flex;align-items:flex-start;gap:12px;padding:13px 16px;
-  border:1.5px solid var(--border);border-radius:11px;cursor:pointer;
-  transition:all .14s;background:var(--card);
-}
-.opt:hover:not(.dis){border-color:var(--accent);background:var(--accent-l);}
-.opt.sel{border-color:var(--accent);background:var(--accent-l);}
-.opt.ok{border-color:var(--correct);background:var(--easy-bg);}
-.opt.bad{border-color:var(--wrong);background:var(--hard-bg);}
-.opt.dis{cursor:default;}
-.let{
-  width:26px;height:26px;border-radius:7px;background:var(--bg);
-  font-family:'Fraunces',serif;font-size:12px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  color:var(--muted);transition:all .14s;
-}
-.opt.sel .let{background:var(--accent);color:#fff;}
-.opt.ok .let{background:var(--correct);color:#fff;}
-.opt.bad .let{background:var(--wrong);color:#fff;}
-.opt-txt{font-size:14px;line-height:1.45;padding-top:4px;}
-
-/* ── V/F OPTIONS ── */
-.vf-wrap{display:flex;gap:12px;}
-.vf-btn{
-  flex:1;padding:16px;border:1.5px solid var(--border);border-radius:12px;
-  cursor:pointer;font-family:'Fraunces',serif;font-size:17px;font-weight:700;
-  background:var(--card);color:var(--ink);transition:all .14s;text-align:center;
-}
-.vf-btn:hover:not(.dis){border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
-.vf-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
-.vf-btn.ok{border-color:var(--correct);background:var(--easy-bg);color:var(--correct);}
-.vf-btn.bad{border-color:var(--wrong);background:var(--hard-bg);color:var(--wrong);}
-.vf-btn.dis{cursor:default;}
-
-/* ── FEEDBACK ── */
-.fb{
-  margin-top:14px;padding:13px 16px;border-radius:10px;
-  font-size:13.5px;line-height:1.5;display:none;
-}
-.fb.show{display:block;animation:fadeIn .2s ease;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.fb.ok{background:var(--easy-bg);color:#1a5030;border-left:3px solid var(--correct);}
-.fb.bad{background:var(--hard-bg);color:#7a1030;border-left:3px solid var(--wrong);}
-.fb-icon{font-weight:700;margin-right:5px;}
-
-.q-foot{display:flex;justify-content:flex-end;margin-top:18px;}
-.btn-next{
-  background:var(--ink);color:#fff;border:none;border-radius:9px;
-  padding:10px 24px;font-family:'Fraunces',serif;font-size:13px;
-  font-weight:700;cursor:pointer;display:none;transition:background .14s;
-}
-.btn-next:hover{background:#2e2820;}
-.btn-next.show{display:block;}
-
-/* ── RESULTS ── */
-#results{display:none;}
-.res-hero{
-  background:linear-gradient(135deg,#1c1a17,#2e2820);color:#fff;
-  border-radius:var(--radius);padding:40px;margin-bottom:20px;
-  display:flex;gap:36px;align-items:center;flex-wrap:wrap;
-}
-.ring-wrap{position:relative;width:110px;height:110px;flex-shrink:0;}
-.ring-svg{width:110px;height:110px;transform:rotate(-90deg);}
-.ring-track{fill:none;stroke:rgba(255,255,255,.12);stroke-width:8;}
-.ring-fill{
-  fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;
-  stroke-dasharray:283;stroke-dashoffset:283;
-  transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
-}
-.ring-label{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:'Fraunces',serif;font-size:22px;font-weight:900;
-}
-.res-info{flex:1;}
-.res-info h2{font-family:'Fraunces',serif;font-size:clamp(20px,3vw,28px);font-weight:900;letter-spacing:-.02em;margin-bottom:6px;}
-.res-info p{opacity:.65;font-size:13.5px;margin-bottom:18px;}
-.res-nums{display:flex;gap:20px;flex-wrap:wrap;}
-.res-num .n{font-family:'Fraunces',serif;font-size:24px;font-weight:700;line-height:1;}
-.res-num .l{font-size:10.5px;opacity:.55;text-transform:uppercase;letter-spacing:.05em;}
-
-.panel{
-  background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);
-  box-shadow:var(--shadow);padding:28px 30px;margin-bottom:18px;
-}
-.panel-title{
-  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:18px;
-}
-.diff-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.diff-row:last-child{margin-bottom:0;}
-.diff-lbl{width:65px;font-size:13px;font-weight:600;flex-shrink:0;}
-.bar-t{flex:1;height:9px;background:var(--bg);border-radius:99px;overflow:hidden;}
-.bar-f{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);width:0;}
-.diff-p{width:40px;text-align:right;font-size:12.5px;font-weight:600;color:var(--muted);flex-shrink:0;}
-
-.topic-row{margin-bottom:14px;}
-.topic-name{font-size:13px;font-weight:500;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
-.warn{font-size:11px;color:var(--accent);font-weight:700;}
-
-.rev-card{
-  background:var(--bg);border-radius:11px;padding:18px 20px;margin-bottom:12px;
-  border:1.5px solid var(--border);
-}
-.rev-q{font-size:14px;font-weight:500;margin-bottom:10px;line-height:1.5;}
-.rv{font-size:13px;margin-bottom:3px;}
-.rv .lbl{font-weight:600;}
-.rv.bad{color:var(--wrong);}
-.rv.ok{color:var(--correct);}
-.rv-exp{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5;background:var(--card);padding:10px 12px;border-radius:8px;border:1px solid var(--border);}
-
-.empty-rev{text-align:center;padding:36px;color:var(--muted);font-size:15px;background:var(--card);border-radius:var(--radius);border:1.5px dashed var(--border);}
-
-.btn-restart{
-  display:inline-block;background:var(--accent);color:#fff;border:none;
-  border-radius:12px;padding:14px 36px;font-family:'Fraunces',serif;
-  font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s;
-}
-.btn-restart:hover{background:#a84d0e;}
-
-@media(max-width:600px){
-  header{padding:0 16px;}
-  #prog-wrap{min-width:unset;width:100%;}
-  .q-card{padding:22px 18px;}
-  .res-hero{padding:26px 22px;gap:22px;}
-  #start{padding:36px 22px;}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Avaliação – Capítulos 3 e 4</title>
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background: #f4f6f8;
+      color: #1f2937;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+    h1, h2, h3 {
+      color: #0f172a;
+      margin-top: 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #475569;
+      margin-bottom: 30px;
+    }
+    .info-box {
+      background: #eef4ff;
+      border-left: 6px solid #2563eb;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    .section {
+      margin-top: 35px;
+    }
+    .question {
+      background: #f8fafc;
+      border: 1px solid #dbeafe;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .question h3 {
+      margin-bottom: 10px;
+      color: #1d4ed8;
+      font-size: 1.08rem;
+    }
+    .tag {
+      display: inline-block;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      margin-right: 8px;
+    }
+    ul {
+      padding-left: 22px;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+    .rubrica {
+      background: #fff7ed;
+      border-left: 6px solid #ea580c;
+      padding: 18px 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .small {
+      font-size: 0.95rem;
+      color: #475569;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h1>Avaliação Dissertativa – Capítulos 3 e 4</h1>
+    <p class="subtitle">
+      Comportamento Organizacional: <strong>Percepção</strong> e <strong>Motivação</strong>
+    </p>
 
-<header>
-  <div class="logo-pill">Quiz</div>
-  <h1>Percepção & Motivação</h1>
-  <div id="prog-wrap">
-    <div id="prog-track"><div id="prog-fill"></div></div>
-    <span id="prog-lbl">0 / 0</span>
-  </div>
-</header>
-
-<div id="controls">
-  <span class="flabel">Filtrar</span>
-  <button class="chip active" data-f="all">Todas</button>
-  <button class="chip e" data-f="easy">Fácil</button>
-  <button class="chip m" data-f="med">Médio</button>
-  <button class="chip h" data-f="hard">Difícil</button>
-  <div class="vline"></div>
-  <label class="shuffle-wrap">
-    <span>Embaralhar</span>
-    <div class="tog-track" id="tog"><div class="tog-thumb"></div></div>
-  </label>
-</div>
-
-<div id="wrap">
-
-<!-- START -->
-<div id="start">
-  <h2>Percepção &<br><em>Motivação</em></h2>
-  <p>Questões sobre percepção, distorções cognitivas, Teoria da Atribuição, Maslow, McClelland, McGregor, Herzberg, Vroom e Adams — com pegadinhas incluídas.</p>
-  <div class="stat-row">
-    <div class="stat-box"><div class="n" id="s-tot">—</div><div class="l">Questões</div></div>
-    <div class="stat-box"><div class="n" style="color:var(--easy)">30%</div><div class="l">Fácil</div></div>
-    <div class="stat-box"><div class="n" style="color:var(--med)">40%</div><div class="l">Médio</div></div>
-    <div class="stat-box"><div class="n" style="color:var(--hard)">30%</div><div class="l">Difícil</div></div>
-  </div>
-  <button class="btn-go" id="btn-start">Começar →</button>
-</div>
-
-<!-- QUIZ -->
-<div id="quiz" style="display:none"></div>
-
-<!-- RESULTS -->
-<div id="results">
-  <div class="res-hero">
-    <div class="ring-wrap">
-      <svg class="ring-svg" viewBox="0 0 100 100">
-        <circle class="ring-track" cx="50" cy="50" r="45"/>
-        <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="45"/>
-      </svg>
-      <div class="ring-label" id="ring-lbl">0%</div>
+    <div class="info-box">
+      <p><strong>Instruções:</strong></p>
+      <ul>
+        <li>Leia atentamente cada enunciado e responda com argumentação teórica consistente.</li>
+        <li>Priorize conceitos, comparações entre autores e aplicação prática no contexto organizacional.</li>
+        <li>Quando solicitado, utilize exemplos para sustentar sua análise.</li>
+        <li>Evite respostas exclusivamente definicionais; desenvolva raciocínio crítico.</li>
+      </ul>
     </div>
-    <div class="res-info">
-      <h2 id="res-head"></h2>
-      <p id="res-sub"></p>
-      <div class="res-nums">
-        <div class="res-num"><div class="n" style="color:var(--correct)" id="r-c">0</div><div class="l">Corretas</div></div>
-        <div class="res-num"><div class="n" style="color:var(--wrong)" id="r-w">0</div><div class="l">Erradas</div></div>
-        <div class="res-num"><div class="n" id="r-t">0</div><div class="l">Total</div></div>
+
+    <div class="section">
+      <h2>Parte I – Questões Dissertativas Teóricas</h2>
+
+      <div class="question">
+        <span class="tag">Capítulo 3</span>
+        <span class="tag">Teoria</span>
+        <h3>1. Percepção como construção da realidade</h3>
+        <p>
+          Explique por que a percepção não pode ser entendida como um reflexo fiel da realidade objetiva.
+          Em sua resposta, discuta o papel das memórias, experiências, valores, crenças, emoções e paradigmas
+          na interpretação do mundo e analise como isso influencia o comportamento no ambiente organizacional.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 3</span>
+        <span class="tag">Fundamentos teóricos</span>
+        <h3>2. Fundamentos teóricos da percepção e maturidade intelectual</h3>
+        <p>
+          O material indica que “quanto mais maduro intelectualmente, melhor é a percepção”.
+          Desenvolva uma análise crítica dessa afirmação, relacionando-a à capacidade de interpretar situações
+          complexas, considerar diferentes pontos de vista e reduzir erros de julgamento.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 3</span>
+        <span class="tag">Teoria da Atribuição</span>
+        <h3>3. Teoria da Atribuição aplicada à gestão</h3>
+        <p>
+          Apresente os três critérios centrais da Teoria da Atribuição — consenso, diferenciação e coerência
+          (ou consistência) — e explique como eles auxiliam na análise das causas de um comportamento.
+          Em seguida, discuta os riscos gerenciais de atribuir desempenho insuficiente apenas a fatores internos do indivíduo.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 3</span>
+        <span class="tag">Vieses perceptivos</span>
+        <h3>4. Distorções perceptivas e julgamento organizacional</h3>
+        <p>
+          Compare criticamente os seguintes vieses perceptivos: <strong>efeito halo</strong>,
+          <strong>estereotipagem</strong>, <strong>efeito de contraste</strong> e <strong>projeção</strong>.
+          Explique como cada um deles compromete processos como recrutamento, avaliação de desempenho,
+          promoção e tomada de decisão.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 3</span>
+        <span class="tag">Ética</span>
+        <h3>5. Ética no processo decisório</h3>
+        <p>
+          Analise a relação entre percepção e ética nas decisões organizacionais.
+          Em sua resposta, discuta por que a transparência, a equidade, o diálogo e a responsabilidade social
+          e ambiental são critérios indispensáveis para um processo decisório eticamente defensável.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 4</span>
+        <span class="tag">Maslow x McClelland</span>
+        <h3>6. Comparação entre teorias das necessidades</h3>
+        <p>
+          Compare a Hierarquia das Necessidades de Maslow com a Teoria das Necessidades Adquiridas de McClelland.
+          Aponte convergências, divergências e limites de cada abordagem para explicar a motivação humana no trabalho.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 4</span>
+        <span class="tag">McGregor</span>
+        <h3>7. Teoria X e Teoria Y: pressupostos e impactos gerenciais</h3>
+        <p>
+          Explique os pressupostos centrais da Teoria X e da Teoria Y de McGregor.
+          Em seguida, analise como a visão do gestor sobre a natureza humana interfere no estilo de liderança,
+          na distribuição de responsabilidades e no potencial de desenvolvimento da equipe.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 4</span>
+        <span class="tag">Herzberg</span>
+        <h3>8. Teoria dos Dois Fatores e enriquecimento do cargo</h3>
+        <p>
+          Diferencie fatores higiênicos e fatores motivacionais na teoria de Herzberg.
+          Explique por que a simples eliminação da insatisfação não garante motivação duradoura
+          e discuta de que maneira o enriquecimento do cargo pode contribuir para maior engajamento.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Capítulo 4</span>
+        <span class="tag">Vroom + Adams</span>
+        <h3>9. Expectativa, instrumentalidade, valência e percepção de justiça</h3>
+        <p>
+          Relacione a Teoria da Expectativa de Vroom com a Teoria da Equidade de Stacy Adams.
+          Mostre como a motivação pode ser afetada, simultaneamente, pela crença de que o esforço levará a recompensas
+          e pela percepção de justiça na comparação com outras pessoas ou com o sistema organizacional.
+        </p>
+      </div>
+
+      <div class="question">
+        <span class="tag">Integração</span>
+        <span class="tag">Capítulos 3 e 4</span>
+        <h3>10. Percepção, motivação e comportamento</h3>
+        <p>
+          Elabore um texto articulando os capítulos 3 e 4, demonstrando como a forma de perceber a realidade
+          interfere na motivação e, consequentemente, no comportamento organizacional.
+          Sua resposta deve integrar ao menos três teorias estudadas e apresentar implicações práticas para a gestão.
+        </p>
       </div>
     </div>
-  </div>
 
-  <div class="panel">
-    <div class="panel-title">Desempenho por Dificuldade</div>
-    <div class="diff-row">
-      <div class="diff-lbl" style="color:var(--easy)">Fácil</div>
-      <div class="bar-t"><div class="bar-f" id="bf-e" style="background:var(--easy)"></div></div>
-      <div class="diff-p" id="bp-e">—</div>
-    </div>
-    <div class="diff-row">
-      <div class="diff-lbl" style="color:var(--med)">Médio</div>
-      <div class="bar-t"><div class="bar-f" id="bf-m" style="background:var(--med)"></div></div>
-      <div class="diff-p" id="bp-m">—</div>
-    </div>
-    <div class="diff-row">
-      <div class="diff-lbl" style="color:var(--hard)">Difícil</div>
-      <div class="bar-t"><div class="bar-f" id="bf-h" style="background:var(--hard)"></div></div>
-      <div class="diff-p" id="bp-h">—</div>
-    </div>
-  </div>
+    <div class="section">
+      <h2>Parte II – Estudos de Caso Dissertativos</h2>
 
-  <div class="panel">
-    <div class="panel-title">Desempenho por Tópico</div>
-    <div id="topic-bars"></div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">Revisão de Erros</div>
-    <div id="review-list"></div>
-  </div>
-
-  <div style="text-align:center;padding-bottom:20px;">
-    <button class="btn-restart" id="btn-restart">↺ Recomeçar</button>
-  </div>
-</div>
-
-</div><!-- /wrap -->
-
-<script>
-// ────────────────────────────────────────────
-// QUESTÕES
-// ────────────────────────────────────────────
-const QS = [
-
-  // ══ FÁCEIS — PERCEPÇÃO ══
-  {
-    diff:'easy', topic:'Percepção', vf:true, trick:false,
-    text:'VERDADEIRO OU FALSO: Cada pessoa compreende a realidade de forma diferente, e o fato de alguém perceber algo de determinada forma não exclui a percepção do outro.',
-    opts:['Verdadeiro','Falso'],
-    correct:0,
-    exp:'Verdadeiro. O material afirma exatamente isso: cada pessoa compreende a realidade de forma diferente e a percepção de um não invalida a do outro — percepções distintas podem até aprofundar relacionamentos.'
-  },
-  {
-    diff:'easy', topic:'Percepção', vf:false, trick:false,
-    text:'De acordo com os fundamentos teóricos da percepção, o que ela envolve necessariamente?',
-    opts:['Apenas dados objetivos e verificáveis do ambiente externo','Nossas memórias, valores e experiências passadas','Somente as informações visuais captadas pelo sistema nervoso','A opinião de especialistas sobre determinado fenômeno'],
-    correct:1,
-    exp:'Segundo o material, a percepção envolve nossas memórias e está ligada a valores, crenças, experiências passadas, interesse, emoção e motivação. "A percepção não reflete a realidade objetiva."'
-  },
-  {
-    diff:'easy', topic:'Percepção', vf:true, trick:false,
-    text:'VERDADEIRO OU FALSO: Quando descrevemos o que vemos, estamos, na verdade, descrevendo a nós mesmos, nossas percepções e nossos paradigmas.',
-    opts:['Verdadeiro','Falso'],
-    correct:0,
-    exp:'Verdadeiro. O material afirma literalmente: "Quando descrevemos o que vemos, estamos descrevendo a nós mesmos, nossas percepções e nossos paradigmas."'
-  },
-  {
-    diff:'easy', topic:'Motivação', vf:false, trick:false,
-    text:'Na hierarquia de necessidades de Maslow, qual é a necessidade mais básica, que deve ser satisfeita antes de qualquer outra?',
-    opts:['Necessidade de segurança','Necessidade de estima','Necessidades fisiológicas','Necessidade de autorrealização'],
-    correct:2,
-    exp:'As necessidades fisiológicas (sexo, alimento, sono) são as mais básicas na pirâmide de Maslow. Se não forem satisfeitas, as demais "oferecerão pouca motivação".'
-  },
-  {
-    diff:'easy', topic:'Motivação', vf:true, trick:false,
-    text:'VERDADEIRO OU FALSO: Na Teoria X de McGregor, o trabalhador é visto como alguém que naturalmente gosta de trabalhar e demonstra autocontrole quando comprometido.',
-    opts:['Verdadeiro','Falso'],
-    correct:1,
-    exp:'Falso. Essa é a visão da Teoria Y. Na Teoria X, o homem "por natureza não gosta de trabalhar" e precisa ser coagido ou ameaçado com punições para cumprir metas.'
-  },
-  {
-    diff:'easy', topic:'Motivação', vf:false, trick:false,
-    text:'Qual teórico identificou dois grupos de fatores no trabalho — um ligado à satisfação e outro à insatisfação — chamados de fatores motivacionais e fatores higiênicos?',
-    opts:['Abraham Maslow','Douglas McGregor','Victor Vroom','Frederick Herzberg'],
-    correct:3,
-    exp:'Frederick Herzberg, com sua Teoria Bifatorial (ou dos Dois Fatores), identificou fatores intrínsecos ligados à satisfação (motivacionais) e fatores extrínsecos ligados à insatisfação (higiênicos).'
-  },
-
-  // ══ MÉDIOS — PERCEPÇÃO ══
-  {
-    diff:'med', topic:'Percepção', vf:false, trick:false,
-    text:'Segundo a Teoria da Atribuição de Soto, quando um funcionário chega atrasado e todos os colegas que fazem o mesmo percurso também chegam atrasados, qual fator está em ação e qual é a atribuição resultante?',
-    opts:['Coerência — causa interna, pois é um comportamento repetido','Diferenciação — causa interna, pois o comportamento é incomum','Consenso alto — causa externa, pois todos respondem de forma semelhante','Projeção — causa interna, baseada nos antecedentes do observador'],
-    correct:2,
-    exp:'O fator é o Consenso: "quando todas as pessoas que enfrentam determinada situação respondem de maneira semelhante." Se o consenso for alto, a atribuição será a uma causa externa.'
-  },
-  {
-    diff:'med', topic:'Percepção', vf:false, trick:false,
-    text:'O fator "Diferenciação" na Teoria da Atribuição diz respeito a:',
-    opts:['A frequência com que o comportamento se repete ao longo do tempo','Comportamentos diferentes em situações diferentes — se não é habitual, atribui-se a causa externa','A comparação do comportamento do indivíduo com a média do grupo','O grau de consenso entre colegas que vivenciam a mesma situação'],
-    correct:1,
-    exp:'"Diferenciação se refere a comportamentos diferentes em situações diferentes. Se não é um comportamento habitual, o observador atribuirá a uma causa externa."'
-  },
-  {
-    diff:'med', topic:'Percepção', vf:false, trick:false,
-    text:'Qual distorção de percepção consiste em avaliar uma pessoa principalmente a partir de uma única característica marcante?',
-    opts:['Efeito de Contraste','Estereótipo','Efeito de Halo','Projeção'],
-    correct:2,
-    exp:'O Efeito de Halo é a "impressão da pessoa a partir de uma só característica." Ele leva o observador a generalizar uma qualidade ou defeito para julgar a pessoa como um todo.'
-  },
-  {
-    diff:'med', topic:'Percepção', vf:false, trick:false,
-    text:'Para minimizar as distorções de percepção, o material recomenda três medidas. Qual das alternativas abaixo NÃO é uma dessas medidas?',
-    opts:['Aumentar a frequência de observações em situações diferenciadas','Coletar percepções de outras pessoas para ampliar informações','Estar consciente das distorções existentes','Evitar qualquer julgamento sobre o comportamento alheio'],
-    correct:3,
-    exp:'As três medidas do material são: (1) aumentar frequência de observações em situações diferenciadas, (2) coletar percepções de outras pessoas e (3) estar consciente das distorções. Evitar julgamentos não é citado.'
-  },
-
-  // ══ MÉDIOS — MOTIVAÇÃO ══
-  {
-    diff:'med', topic:'Motivação', vf:false, trick:false,
-    text:'Na Teoria de McClelland, qual necessidade é caracterizada pela preferência por situações com risco moderado, responsabilidade pessoal pelo sucesso e desejo de feedback específico sobre desempenho?',
-    opts:['Necessidade de Associação','Necessidade de Poder Social','Necessidade de Realização','Necessidade de Segurança'],
-    correct:2,
-    exp:'A Necessidade de Realização, segundo McClelland, leva pessoas a preferirem "situações que envolvem risco moderado e responsabilidade pessoal pelo sucesso" com "feedback específico sobre o desempenho".'
-  },
-  {
-    diff:'med', topic:'Motivação', vf:true, trick:false,
-    text:'VERDADEIRO OU FALSO: Segundo Herzberg, a eliminação dos fatores de insatisfação (higiênicos) leva automaticamente à satisfação dos trabalhadores.',
-    opts:['Verdadeiro','Falso'],
-    correct:1,
-    exp:'Falso. Herzberg afirma que "o oposto de satisfação não é a insatisfação." A eliminação de características insatisfatórias não leva necessariamente à satisfação — para isso, são necessários os fatores motivacionais (intrínsecos).'
-  },
-  {
-    diff:'med', topic:'Motivação', vf:false, trick:false,
-    text:'Na Teoria da Expectativa de Vroom, o termo "Valência" refere-se a:',
-    opts:['A crença de que o esforço levará ao desempenho esperado','A possibilidade de que atingir o objetivo traga recompensa','O grau de importância que o objetivo tem para o indivíduo','A percepção de que as condições externas permitem atingir a meta'],
-    correct:2,
-    exp:'"Valência refere-se ao grau de importância que tem o objetivo para o indivíduo." É um dos três fatores da motivação em Vroom, junto com Expectativa e Instrumentalidade.'
-  },
-  {
-    diff:'med', topic:'Motivação', vf:false, trick:false,
-    text:'Na Teoria da Equidade de Stacy Adams, quando um trabalhador compara sua proporção esforço/resultado com a de colegas e as considera iguais, ocorre:',
-    opts:['Um estado de iniquidade que reduz a produtividade','Um estado de equidade — a pessoa entende a situação como justa','Um estado de motivação extrínseca elevada','Um conflito de expectativas que exige mediação gerencial'],
-    correct:1,
-    exp:'Segundo Adams, "se as proporções são iguais, diz-se que existe um estado de equidade, ou seja, a pessoa entende como justa a situação." Caso contrário, pode reduzir produtividade ou qualidade.'
-  },
-  {
-    diff:'med', topic:'Motivação', vf:false, trick:false,
-    text:'O "enriquecimento do cargo", proposta de Herzberg, consiste em:',
-    opts:['Aumentar o salário e benefícios para eliminar insatisfação','Oferecer incentivos, tornar o trabalho mais desafiador e dar sentido à função','Reduzir a carga horária para aumentar a satisfação pessoal','Criar grupos de trabalho autônomos sem supervisão direta'],
-    correct:1,
-    exp:'Herzberg propõe que as organizações "ofereçam incentivos e tornem o trabalho mais desafiador" — a pessoa deve dar um sentido ao trabalho (fatores motivacionais), mas também cuidar dos fatores higiênicos para não gerar insatisfação.'
-  },
-
-  // ══ DIFÍCEIS — PERCEPÇÃO ══
-  {
-    diff:'hard', topic:'Percepção', vf:false, trick:false,
-    text:'O conceito de "heteropercepção" diz respeito a:',
-    opts:['A capacidade de perceber o próprio comportamento de forma objetiva','O modo como percebemos os outros — impressão formada a partir de suas ações, voz, gestos e reações','A tendência de projetar características próprias nas outras pessoas','O processo pelo qual o sujeito e o mundo observado se tornam independentes'],
-    correct:1,
-    exp:'"É importante o conceito de heteropercepção — o modo como percebemos os outros. É a impressão que eu tenho do outro (ações, voz, gestos, movimento, reação)."'
-  },
-  {
-    diff:'hard', topic:'Percepção', vf:false, trick:false,
-    text:'Quando julgamos o comportamento de outras pessoas, segundo o material, existe uma tendência sistemática. Qual é ela?',
-    opts:['Subestimar as causas internas e superestimar as causas externas do comportamento alheio','Superestimar as causas internas ou pessoais e ignorar fatores situacionais externos','Atribuir comportamentos negativos a causas externas e positivos a causas internas','Buscar sempre o consenso entre pares antes de emitir qualquer julgamento'],
-    correct:1,
-    exp:'O material afirma: "quando julgamos o comportamento de outras pessoas, tendemos a superestimar as causas internas ou pessoais." O exemplo é o gerente que atribui o fraco desempenho à preguiça, ignorando um produto concorrente.'
-  },
-  {
-    diff:'hard', topic:'Percepção', vf:false, trick:true,
-    text:'[ATENÇÃO] O material afirma que "quanto mais maduro intelectualmente, pior é a percepção do indivíduo, pois ele se torna mais rígido em seus julgamentos". Essa afirmação está correta?',
-    opts:['Sim, a maturidade intelectual cria vieses cognitivos permanentes','Não — o material afirma o oposto: quanto mais maduro intelectualmente, melhor é a percepção','Sim, pois o conhecimento prévio distorce a leitura de novas situações','Não, pois o material não relaciona maturidade intelectual à percepção'],
-    correct:1,
-    exp:'Pegadinha! O material diz exatamente o contrário: "Quanto mais maduro intelectualmente, melhor é a sua percepção." A proposição da questão inverteu o sentido original.'
-  },
-
-  // ══ DIFÍCEIS — MOTIVAÇÃO ══
-  {
-    diff:'hard', topic:'Motivação', vf:false, trick:false,
-    text:'Na Teoria de McClelland, a Necessidade de Poder se manifesta de duas formas. Qual é a diferença entre poder pessoal e poder social?',
-    opts:['Poder pessoal busca influência no grupo; poder social busca influência sobre a própria carreira','Poder pessoal confirma domínio sobre as pessoas; poder social usa o poder para resolver problemas organizacionais','Poder pessoal é exercido por líderes formais; poder social é exercido por líderes informais','Poder pessoal é motivado por reconhecimento; poder social é motivado por remuneração'],
-    correct:1,
-    exp:'Segundo McClelland: "Poder pessoal: propósito — confirmar seu domínio sobre eles. Poder social: fazem uso desse poder para resolver problemas organizacionais."'
-  },
-  {
-    diff:'hard', topic:'Motivação', vf:false, trick:true,
-    text:'[ATENÇÃO] McGregor concluiu, após suas pesquisas, que as premissas da Teoria X eram mais válidas do que as da Teoria Y por serem mais realistas sobre o comportamento humano nas organizações. Isso está correto?',
-    opts:['Sim, pois a Teoria X é baseada em observações empíricas de gestores experientes','Não — McGregor considerava as premissas da Teoria Y mais válidas que as da Teoria X','Sim, pois a maioria dos trabalhadores prefere segurança a responsabilidade','Não, pois McGregor não fez comparações de validade entre as duas teorias'],
-    correct:1,
-    exp:'Pegadinha! O material afirma o oposto: "McGregor considerava as premissas da teoria Y mais válidas do que as da teoria X e propôs ideias como processo decisório participativo, tarefas desafiadoras etc."'
-  },
-  {
-    diff:'hard', topic:'Motivação', vf:false, trick:false,
-    text:'Na Teoria da Expectativa de Vroom, "Instrumentalidade" é definida como:',
-    opts:['A crença de que o esforço pessoal resultará no desempenho desejado','O grau de valor ou atratividade que a recompensa tem para o indivíduo','A possibilidade de que a ação de atingir o objetivo seja recompensadora','A percepção de que as condições organizacionais permitem o alcance das metas'],
-    correct:2,
-    exp:'Vroom define Instrumentalidade como "a possibilidade da ação de se atingir o objetivo ser recompensadora." É o elo entre o desempenho e a recompensa — um dos três fatores da cadeia motivacional.'
-  },
-  {
-    diff:'hard', topic:'Motivação', vf:false, trick:true,
-    text:'[ATENÇÃO] O material afirma que aceitar as premissas da Teoria Y de McGregor e agir de acordo com elas resulta comprovadamente em trabalhadores mais motivados. Essa afirmação é verdadeira?',
-    opts:['Sim, pois há ampla evidência empírica de que a Teoria Y aumenta a motivação','Sim, pois participação e autonomia sempre elevam o desempenho segundo McGregor','Não — o próprio material ressalva que não existem evidências de que aceitar a Teoria Y resulte em trabalhador mais motivado','Não, pois a Teoria Y foi abandonada pela ciência organizacional moderna'],
-    correct:2,
-    exp:'Pegadinha! O material afirma explicitamente: "Não existem evidências de que a aceitação da teoria Y e a alteração do comportamento individual de acordo com ela resultem em um trabalhador mais motivado."'
-  },
-];
-
-// ────────────────────────────────────────────
-// ESTADO
-// ────────────────────────────────────────────
-let pool=[], answers=[], cur=0, shuffling=false, filterVal='all';
-
-// ────────────────────────────────────────────
-// BOOT
-// ────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('s-tot').textContent = QS.length;
-  document.getElementById('controls').style.display='none';
-
-  document.getElementById('btn-start').onclick = startQuiz;
-  document.getElementById('btn-restart').onclick = () => {
-    document.getElementById('results').style.display='none';
-    document.getElementById('start').style.display='block';
-    document.getElementById('controls').style.display='none';
-  };
-
-  document.querySelectorAll('[data-f]').forEach(b=>{
-    b.onclick=()=>{
-      filterVal=b.dataset.f;
-      document.querySelectorAll('[data-f]').forEach(x=>x.classList.remove('active'));
-      b.classList.add('active');
-    };
-  });
-
-  document.querySelector('.shuffle-wrap').onclick=()=>{
-    shuffling=!shuffling;
-    document.getElementById('tog').classList.toggle('on',shuffling);
-  };
-});
-
-function startQuiz(){
-  pool = filterVal==='all' ? [...QS] : QS.filter(q=>q.diff===filterVal);
-  if(shuffling) pool=shuffle(pool);
-  answers=new Array(pool.length).fill(null);
-  cur=0;
-  document.getElementById('start').style.display='none';
-  document.getElementById('results').style.display='none';
-  document.getElementById('quiz').style.display='block';
-  document.getElementById('controls').style.display='none';
-  prog();
-  render();
-}
-
-// ────────────────────────────────────────────
-// RENDER QUESTION
-// ────────────────────────────────────────────
-function render(){
-  if(cur>=pool.length){showResults();return;}
-  const q=pool[cur];
-  const dMap={easy:'Fácil',med:'Médio',hard:'Difícil'};
-  const bMap={easy:'bdg-e',med:'bdg-m',hard:'bdg-h'};
-  const qEl=document.getElementById('quiz');
-
-  let innerHTML = `
-    <div class="q-card">
-      <div class="q-meta">
-        <span class="qnum">Questão ${cur+1} de ${pool.length}</span>
-        <span class="bdg ${bMap[q.diff]}">${dMap[q.diff]}</span>
-        <span class="bdg bdg-tp">${q.topic}</span>
-        ${q.trick?'<span class="bdg-trick">⚠ Atenção</span>':''}
+      <div class="question">
+        <span class="tag">Estudo de caso</span>
+        <h3>11. Caso 1 – Julgamento precipitado</h3>
+        <p>
+          Uma gerente conclui que um colaborador é desinteressado porque ele tem se mostrado calado nas reuniões.
+          No entanto, outros membros da equipe afirmam que ele entrega resultados consistentes, participa bem em grupos menores
+          e atravessa um período de adaptação a uma nova função.
+        </p>
+        <p>
+          Com base no conteúdo estudado, analise o caso considerando:
+        </p>
+        <ul>
+          <li>a possibilidade de distorções perceptivas;</li>
+          <li>o uso da Teoria da Atribuição para avaliar a situação;</li>
+          <li>as consequências éticas de uma decisão precipitada;</li>
+          <li>duas ações gerenciais para reduzir a chance de erro de julgamento.</li>
+        </ul>
       </div>
-      <div class="q-text">${q.text}</div>`;
 
-  if(q.vf){
-    innerHTML+=`<div class="vf-wrap">
-      <button class="vf-btn" onclick="pick(0)">Verdadeiro</button>
-      <button class="vf-btn" onclick="pick(1)">Falso</button>
-    </div>`;
-  } else {
-    const letters=['A','B','C','D'];
-    innerHTML+=`<div class="opts">`;
-    q.opts.forEach((o,i)=>{
-      innerHTML+=`<div class="opt" data-i="${i}" onclick="pick(${i})">
-        <div class="let">${letters[i]}</div>
-        <div class="opt-txt">${o}</div>
-      </div>`;
-    });
-    innerHTML+=`</div>`;
-  }
+      <div class="question">
+        <span class="tag">Estudo de caso</span>
+        <h3>12. Caso 2 – Queda de motivação</h3>
+        <p>
+          Em uma empresa, os funcionários relatam queda no entusiasmo com o trabalho.
+          Os salários estão em dia e o ambiente físico é adequado, mas muitos afirmam que não recebem reconhecimento,
+          não percebem oportunidades de crescimento e consideram injusta a distribuição de recompensas.
+        </p>
+        <p>
+          Analise o caso à luz das teorias de <strong>Herzberg</strong>, <strong>Vroom</strong> e <strong>Stacy Adams</strong>.
+          Explique, de forma integrada, por que a motivação está baixa e proponha medidas coerentes com essas abordagens teóricas.
+        </p>
+      </div>
+    </div>
 
-  innerHTML+=`
-      <div class="fb" id="fb"></div>
-      <div class="q-foot"><button class="btn-next" id="btn-nxt" onclick="nextQ()">${cur<pool.length-1?'Próxima →':'Ver Resultado ✓'}</button></div>
-    </div>`;
+    <div class="section">
+      <h2>Parte III – Questão-Síntese Avançada</h2>
 
-  qEl.innerHTML=innerHTML;
-  prog();
-}
+      <div class="question">
+        <span class="tag">Questão avançada</span>
+        <h3>13. Redação analítica final</h3>
+        <p>
+          “Nas organizações, problemas de desempenho nem sempre decorrem de falta de capacidade ou de vontade;
+          muitas vezes resultam de percepções distorcidas, lideranças inadequadas e políticas motivacionais mal estruturadas.”
+        </p>
+        <p>
+          Redija um texto dissertativo-argumentativo avaliando criticamente essa afirmação.
+          Utilize conceitos dos dois capítulos e mobilize pelo menos:
+        </p>
+        <ul>
+          <li>uma teoria da percepção;</li>
+          <li>um conjunto de vieses perceptivos;</li>
+          <li>duas teorias da motivação;</li>
+          <li>o tema da ética no processo decisório.</li>
+        </ul>
+      </div>
+    </div>
 
-function pick(idx){
-  if(answers[cur]!==null) return;
-  answers[cur]=idx;
-  const q=pool[cur];
-  const ok=idx===q.correct;
-  const fb=document.getElementById('fb');
+    <div class="section">
+      <h2>Critérios de Correção</h2>
+      <div class="rubrica">
+        <ul>
+          <li><strong>Domínio conceitual:</strong> uso correto das teorias e autores.</li>
+          <li><strong>Capacidade analítica:</strong> comparação, articulação e aprofundamento das ideias.</li>
+          <li><strong>Aplicação prática:</strong> relação entre teoria e contexto organizacional.</li>
+          <li><strong>Coerência argumentativa:</strong> clareza, progressão e consistência do raciocínio.</li>
+          <li><strong>Precisão terminológica:</strong> emprego adequado dos conceitos estudados.</li>
+        </ul>
+      </div>
+    </div>
 
-  if(q.vf){
-    document.querySelectorAll('.vf-btn').forEach((b,i)=>{
-      b.classList.add('dis');
-      if(i===idx) b.classList.add(ok?'ok':'bad');
-      if(i===q.correct && !ok) b.classList.add('ok');
-    });
-  } else {
-    document.querySelectorAll('.opt').forEach((o,i)=>{
-      o.classList.add('dis');
-      if(i===idx) o.classList.add(ok?'ok':'bad');
-      if(i===q.correct && !ok) o.classList.add('ok');
-    });
-  }
-
-  fb.className=`fb show ${ok?'ok':'bad'}`;
-  fb.innerHTML=`<span class="fb-icon">${ok?'✓ Correto!':'✗ Incorreto!'}</span> ${q.exp}`;
-  const btn=document.getElementById('btn-nxt');
-  btn.classList.add('show');
-  prog();
-}
-
-function nextQ(){ cur++; render(); }
-
-function prog(){
-  const done=answers.filter(a=>a!==null).length;
-  const pct=pool.length?done/pool.length*100:0;
-  document.getElementById('prog-fill').style.width=pct+'%';
-  document.getElementById('prog-lbl').textContent=`${done} / ${pool.length}`;
-}
-
-// ────────────────────────────────────────────
-// RESULTS
-// ────────────────────────────────────────────
-function showResults(){
-  document.getElementById('quiz').style.display='none';
-  const rs=document.getElementById('results');
-  rs.style.display='block';
-
-  const correct=answers.filter((a,i)=>a===pool[i].correct).length;
-  const total=pool.length;
-  const pct=Math.round(correct/total*100);
-
-  const circ=2*Math.PI*45;
-  const offset=circ-(pct/100*circ);
-  setTimeout(()=>{ document.getElementById('ring-fill').style.strokeDashoffset=offset; },100);
-  document.getElementById('ring-lbl').textContent=pct+'%';
-
-  const head = pct>=85?'🏆 Excelente!':pct>=65?'👍 Bom resultado!':'📚 Continue estudando!';
-  document.getElementById('res-head').textContent=head;
-  document.getElementById('res-sub').textContent=`${correct} de ${total} questões corretas — ${pct}% de aproveitamento.`;
-  document.getElementById('r-c').textContent=correct;
-  document.getElementById('r-w').textContent=total-correct;
-  document.getElementById('r-t').textContent=total;
-
-  [['easy','bf-e','bp-e'],['med','bf-m','bp-m'],['hard','bf-h','bp-h']].forEach(([d,bId,pId])=>{
-    const qs=pool.filter(q=>q.diff===d);
-    if(!qs.length){document.getElementById(pId).textContent='—';return;}
-    const c=qs.filter(q=>answers[pool.indexOf(q)]===q.correct).length;
-    const p=Math.round(c/qs.length*100);
-    setTimeout(()=>{ document.getElementById(bId).style.width=p+'%'; },150);
-    document.getElementById(pId).textContent=p+'%';
-  });
-
-  const topics=[...new Set(pool.map(q=>q.topic))];
-  document.getElementById('topic-bars').innerHTML=topics.map(topic=>{
-    const qs=pool.filter(q=>q.topic===topic);
-    const c=qs.filter(q=>answers[pool.indexOf(q)]===q.correct).length;
-    const p=Math.round(c/qs.length*100);
-    const color=p>=80?'var(--easy)':p>=60?'var(--med)':'var(--hard)';
-    const warn=p<60?`<span class="warn">⚠ Revisar (${p}%)</span>`:`<span style="font-size:12px;color:var(--muted)">${p}%</span>`;
-    return `<div class="topic-row">
-      <div class="topic-name"><span>${topic}</span>${warn}</div>
-      <div class="bar-t"><div class="bar-f topic-f" data-p="${p}" style="width:0%;background:${color}"></div></div>
-    </div>`;
-  }).join('');
-  setTimeout(()=>{
-    document.querySelectorAll('.topic-f').forEach(el=>{ el.style.width=el.dataset.p+'%'; });
-  },200);
-
-  const wrongs=pool.map((q,i)=>({q,i,chosen:answers[i]})).filter(({q,i})=>answers[i]!==q.correct);
-  const rl=document.getElementById('review-list');
-  if(!wrongs.length){
-    rl.innerHTML=`<div class="empty-rev">🎉 Nenhum erro! Desempenho perfeito.</div>`;
-  } else {
-    rl.innerHTML=wrongs.map(({q,i,chosen})=>`
-      <div class="rev-card">
-        <div class="rev-q">${i+1}. ${q.text}</div>
-        ${chosen!==null?`<div class="rv bad"><span class="lbl">Sua resposta:</span> ${q.vf?(chosen===0?'Verdadeiro':'Falso'):q.opts[chosen]}</div>`:''}
-        <div class="rv ok"><span class="lbl">Resposta correta:</span> ${q.vf?(q.correct===0?'Verdadeiro':'Falso'):q.opts[q.correct]}</div>
-        <div class="rv-exp">💡 ${q.exp}</div>
-      </div>`).join('');
-  }
-
-  rs.scrollIntoView({behavior:'smooth'});
-  prog();
-}
-
-// ────────────────────────────────────────────
-function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
-</script>
+    <div class="footer">
+      <p class="small">
+        Material elaborado com base no conteúdo dos capítulos sobre <strong>Percepção</strong> e <strong>Motivação</strong>,
+        incluindo fundamentos teóricos da percepção, teoria da atribuição, vieses perceptivos, ética no processo decisório,
+        e teorias motivacionais de Maslow, McClelland, McGregor, Herzberg, Vroom e Stacy Adams.
+        <a href="https://www.genspark.ai/api/files/s/EbM3PKhn" target="_blank">Fonte</a>
+      </p>
+    </div>
+  </div>
 </body>
 </html>
