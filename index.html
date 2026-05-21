@@ -1,666 +1,686 @@
-1	<!DOCTYPE html>
-     2	<html lang="pt-BR">
-     3	<head>
-     4	<meta charset="UTF-8">
-     5	<meta name="viewport" content="width=device-width,initial-scale=1">
-     6	<title>Quiz Economia — Revisão Completa</title>
-     7	<style>
-     8	  :root{--bg:#f8fafc;--card:#fff;--primary:#6366f1;--primary-d:#4f46e5;--success:#22c55e;--danger:#ef4444;--warn:#f59e0b;--text:#1e293b;--sub:#64748b;--border:#e2e8f0;--radius:14px;--shadow:0 4px 24px rgba(99,102,241,.08);}
-     9	  *{box-sizing:border-box;margin:0;padding:0;}
-    10	  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;}
-    11	  /* Layout */
-    12	  #app{max-width:760px;margin:0 auto;padding:24px 16px 60px;}
-    13	  /* Cards */
-    14	  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;margin-bottom:20px;}
-    15	  /* Buttons */
-    16	  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 22px;border-radius:10px;font-weight:600;font-size:.95rem;cursor:pointer;border:none;transition:all .18s;}
-    17	  .btn-primary{background:var(--primary);color:#fff;} .btn-primary:hover{background:var(--primary-d);transform:translateY(-1px);}
-    18	  .btn-outline{background:#fff;color:var(--primary);border:2px solid var(--primary);} .btn-outline:hover{background:#ede9fe;}
-    19	  .btn-sm{padding:7px 14px;font-size:.85rem;border-radius:8px;}
-    20	  .btn-danger{background:var(--danger);color:#fff;} .btn-danger:hover{opacity:.9;}
-    21	  .btn-success{background:var(--success);color:#fff;}
-    22	  /* Badge */
-    23	  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700;letter-spacing:.4px;}
-    24	  .badge-easy{background:#dcfce7;color:#166534;} .badge-medium{background:#fef9c3;color:#854d0e;} .badge-hard{background:#fee2e2;color:#991b1b;}
-    25	  .badge-topic{background:#ede9fe;color:#4f46e5;}
-    26	  /* Progress */
-    27	  .prog-bar{background:#e2e8f0;border-radius:999px;height:8px;overflow:hidden;margin:10px 0;}
-    28	  .prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),#a855f7);transition:width .4s cubic-bezier(.4,0,.2,1);}
-    29	  /* Header screen */
-    30	  .hero{text-align:center;padding:40px 24px 32px;}
-    31	  .hero h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
-    32	  .hero p{color:var(--sub);font-size:1.05rem;}
-    33	  .filter-row{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;}
-    34	  .filter-btn{padding:7px 16px;border-radius:999px;font-size:.85rem;font-weight:600;cursor:pointer;border:2px solid var(--border);background:#fff;color:var(--sub);transition:all .15s;}
-    35	  .filter-btn.active{border-color:var(--primary);color:var(--primary);background:#ede9fe;}
-    36	  /* Question card */
-    37	  #q-number{font-size:.85rem;color:var(--sub);font-weight:600;margin-bottom:8px;}
-    38	  #q-text{font-size:1.08rem;font-weight:600;line-height:1.6;margin-bottom:20px;}
-    39	  .options{display:flex;flex-direction:column;gap:10px;}
-    40	  .opt{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all .15s;font-size:.95rem;line-height:1.5;}
-    41	  .opt:hover:not(.disabled){border-color:var(--primary);background:#f5f3ff;}
-    42	  .opt.selected{border-color:var(--primary);background:#ede9fe;}
-    43	  .opt.correct{border-color:var(--success);background:#f0fdf4;}
-    44	  .opt.wrong{border-color:var(--danger);background:#fef2f2;}
-    45	  .opt.disabled{pointer-events:none;}
-    46	  .opt-letter{min-width:26px;height:26px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;}
-    47	  .opt.correct .opt-letter{background:var(--success);color:#fff;}
-    48	  .opt.wrong .opt-letter{background:var(--danger);color:#fff;}
-    49	  .opt.selected:not(.correct):not(.wrong) .opt-letter{background:var(--primary);color:#fff;}
-    50	  /* V/F */
-    51	  .vf-row{display:flex;gap:14px;}
-    52	  .vf-btn{flex:1;padding:16px;border-radius:10px;border:2px solid var(--border);font-size:1rem;font-weight:700;cursor:pointer;background:#fff;transition:all .15s;}
-    53	  .vf-btn:hover:not(.disabled){border-color:var(--primary);background:#ede9fe;}
-    54	  .vf-btn.correct{border-color:var(--success);background:#f0fdf4;color:var(--success);}
-    55	  .vf-btn.wrong{border-color:var(--danger);background:#fef2f2;color:var(--danger);}
-    56	  .vf-btn.selected{border-color:var(--primary);background:#ede9fe;color:var(--primary);}
-    57	  .vf-btn.disabled{pointer-events:none;}
-    58	  /* Feedback */
-    59	  #feedback{margin-top:16px;padding:14px 16px;border-radius:10px;font-size:.9rem;line-height:1.55;display:none;animation:fadeIn .25s;}
-    60	  #feedback.correct{background:#f0fdf4;border-left:4px solid var(--success);color:#166534;}
-    61	  #feedback.wrong{background:#fef2f2;border-left:4px solid var(--danger);color:#991b1b;}
-    62	  /* Nav */
-    63	  .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap;gap:10px;}
-    64	  /* Timer */
-    65	  #timer-display{font-size:1.1rem;font-weight:700;color:var(--primary);min-width:60px;text-align:center;}
-    66	  #timer-display.warn{color:var(--warn);}
-    67	  #timer-display.danger{color:var(--danger);animation:pulse 1s infinite;}
-    68	  /* Results */
-    69	  .score-big{font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,var(--primary),#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    70	  .stat-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
-    71	  .stat-row:last-child{border:none;}
-    72	  .perf-bar{background:#f1f5f9;border-radius:999px;height:10px;overflow:hidden;flex:1;margin:0 12px;}
-    73	  .perf-fill{height:100%;border-radius:999px;transition:width 1s .3s;}
-    74	  .review-item{border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
-    75	  .review-head{padding:14px 16px;font-weight:600;font-size:.93rem;display:flex;align-items:center;gap:10px;}
-    76	  .review-body{padding:0 16px 14px;font-size:.88rem;color:var(--sub);}
-    77	  .review-body p{margin:4px 0;}
-    78	  .r-correct{border-left:4px solid var(--success);}
-    79	  .r-wrong{border-left:4px solid var(--danger);}
-    80	  /* Animations */
-    81	  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-    82	  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-    83	  .screen{display:none;animation:fadeIn .3s;}
-    84	  .screen.active{display:block;}
-    85	  /* Responsive */
-    86	  @media(max-width:520px){.hero h1{font-size:1.5rem;}.score-big{font-size:2.5rem;}.filter-row{gap:6px;}}
-    87	</style>
-    88	</head>
-    89	<body>
-    90	<div id="app">
-    91	
-    92	<!-- START SCREEN -->
-    93	<div id="screen-start" class="screen active">
-    94	  <div class="hero">
-    95	    <h1>📚 Quiz Economia</h1>
-    96	    <p>Balança de Pagamentos · Moeda · Economia Circular</p>
-    97	  </div>
-    98	  <div class="card">
-    99	    <h3 style="margin-bottom:14px">Filtrar por Dificuldade</h3>
-   100	    <div class="filter-row" id="diff-filters">
-   101	      <button class="filter-btn active" data-diff="all">Todas</button>
-   102	      <button class="filter-btn" data-diff="easy">Fácil</button>
-   103	      <button class="filter-btn" data-diff="medium">Médio</button>
-   104	      <button class="filter-btn" data-diff="hard">Difícil</button>
-   105	    </div>
-   106	    <h3 style="margin:18px 0 14px">Filtrar por Tópico</h3>
-   107	    <div class="filter-row" id="topic-filters">
-   108	      <button class="filter-btn active" data-topic="all">Todos</button>
-   109	      <button class="filter-btn" data-topic="Moeda">Moeda</button>
-   110	      <button class="filter-btn" data-topic="Balança">Balança de Pagamentos</button>
-   111	      <button class="filter-btn" data-topic="Circular">Economia Circular</button>
-   112	      <button class="filter-btn" data-topic="Sistema">Sist. Financeiro</button>
-   113	    </div>
-   114	    <h3 style="margin:18px 0 14px">Modo</h3>
-   115	    <div class="filter-row">
-   116	      <button class="filter-btn active" id="mode-seq" data-mode="seq">Sequencial</button>
-   117	      <button class="filter-btn" id="mode-rand" data-mode="rand">Embaralhado</button>
-   118	    </div>
-   119	    <h3 style="margin:18px 0 14px">Temporizador por questão</h3>
-   120	    <div class="filter-row">
-   121	      <button class="filter-btn active" data-timer="0">Sem tempo</button>
-   122	      <button class="filter-btn" data-timer="30">30s</button>
-   123	      <button class="filter-btn" data-timer="60">60s</button>
-   124	      <button class="filter-btn" data-timer="90">90s</button>
-   125	    </div>
-   126	    <div style="margin-top:24px;text-align:center;">
-   127	      <span id="q-count-label" style="color:var(--sub);font-size:.9rem;"></span>
-   128	      <br><br>
-   129	      <button class="btn btn-primary" id="btn-start" style="padding:14px 36px;font-size:1.05rem;">Iniciar Quiz →</button>
-   130	    </div>
-   131	  </div>
-   132	</div>
-   133	
-   134	<!-- QUIZ SCREEN -->
-   135	<div id="screen-quiz" class="screen">
-   136	  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-   137	    <span id="q-number"></span>
-   138	    <span id="timer-display"></span>
-   139	  </div>
-   140	  <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-   141	  <div class="card" style="margin-top:16px">
-   142	    <div id="badge-row" style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;"></div>
-   143	    <div id="q-text"></div>
-   144	    <div id="q-options"></div>
-   145	    <div id="feedback"></div>
-   146	    <div class="nav-row">
-   147	      <button class="btn btn-outline btn-sm" id="btn-prev">← Anterior</button>
-   148	      <button class="btn btn-primary btn-sm" id="btn-next">Próxima →</button>
-   149	    </div>
-   150	  </div>
-   151	</div>
-   152	
-   153	<!-- RESULTS SCREEN -->
-   154	<div id="screen-results" class="screen">
-   155	  <div class="card" style="text-align:center;padding:36px 28px;">
-   156	    <p style="color:var(--sub);font-weight:600;margin-bottom:4px;">Resultado Final</p>
-   157	    <div class="score-big" id="res-score"></div>
-   158	    <p style="font-size:1.1rem;color:var(--sub);margin:8px 0 0" id="res-sub"></p>
-   159	  </div>
-   160	  <div class="card">
-   161	    <h3 style="margin-bottom:16px">📊 Desempenho por Dificuldade</h3>
-   162	    <div id="perf-diff"></div>
-   163	  </div>
-   164	  <div class="card">
-   165	    <h3 style="margin-bottom:16px">📚 Desempenho por Tópico</h3>
-   166	    <div id="perf-topic"></div>
-   167	  </div>
-   168	  <div class="card" id="rec-card" style="display:none">
-   169	    <h3 style="margin-bottom:12px;color:var(--warn)">⚠️ Recomendações de Revisão</h3>
-   170	    <div id="rec-list"></div>
-   171	  </div>
-   172	  <div class="card">
-   173	    <h3 style="margin-bottom:16px">📝 Revisão dos Erros</h3>
-   174	    <div id="error-review"></div>
-   175	  </div>
-   176	  <div style="text-align:center;margin-top:20px;">
-   177	    <button class="btn btn-primary" id="btn-restart">🔄 Reiniciar Quiz</button>
-   178	  </div>
-   179	</div>
-   180	
-   181	</div>
-   182	<script>
-   183	// ===== QUESTION BANK =====
-   184	const ALL_QUESTIONS = [
-   185	  // ---------- MOEDA ----------
-   186	  {id:1,topic:'Moeda',diff:'easy',type:'mc',
-   187	   q:'Quais são as três funções básicas da moeda?',
-   188	   opts:['Intermediária de trocas, unidade de conta e reserva de valor','Depósito bancário, crédito e liquidez','Emissão, fiscalização e regulação','Lastro, câmbio e poupança'],
-   189	   ans:0, exp:'As três funções clássicas são: meio de troca (intermediária), unidade de conta (preços/contratos) e reserva de valor (preservação ao longo do tempo).'},
-   190	
-   191	  {id:2,topic:'Moeda',diff:'easy',type:'mc',
-   192	   q:'O que é "escambo"?',
-   193	   opts:['Troca direta de mercadoria por mercadoria, sem intermediário monetário','Sistema bancário de câmbio entre países','Emissão de moeda pelo Banco Central sem lastro','Modalidade de crédito de curto prazo'],
-   194	   ans:0, exp:'Escambo é a troca direta entre mercadorias, sem moeda. Exige dupla coincidência de desejos.'},
-   195	
-   196	  {id:3,topic:'Moeda',diff:'easy',type:'vf',
-   197	   q:'A nota de R$ 100 possui valor intrínseco igual ao valor que representa, ou seja, "vale" exatamente R$ 100 em matéria-prima.',
-   198	   ans:false, exp:'Nas economias modernas, as cédulas não têm valor intrínseco; elas apenas REPRESENTAM poder de compra.'},
-   199	
-   200	  {id:4,topic:'Moeda',diff:'medium',type:'mc',
-   201	   q:'A "dupla coincidência de desejos" é uma limitação de qual sistema?',
-   202	   opts:['Sistema bancário de reservas fracionárias','Troca por escambo','Sistema de metas de inflação','Mercado de capitais'],
-   203	   ans:1, exp:'No escambo, para uma troca ocorrer, ambas as partes precisam querer exatamente o que a outra oferece — a chamada dupla coincidência de desejos.'},
-   204	
-   205	  {id:5,topic:'Moeda',diff:'medium',type:'mc',
-   206	   q:'A função "unidade de conta" da moeda se manifesta principalmente em:',
-   207	   opts:['Reservas internacionais do Banco Central','Preços de produtos e valores em contratos','Volume de papel-moeda emitido','Taxa de recolhimento compulsório'],
-   208	   ans:1, exp:'A unidade de conta aparece nos preços grafados em etiquetas e nos valores monetários inseridos em contratos de trabalho e serviços.'},
-   209	
-   210	  {id:6,topic:'Moeda',diff:'medium',type:'mc',
-   211	   q:'Em períodos de inflação elevada, qual função da moeda é mais prejudicada?',
-   212	   opts:['Intermediária de trocas','Unidade de conta','Reserva de valor','Meio de pagamento internacional'],
-   213	   ans:2, exp:'A inflação corrói o poder de compra, comprometendo a capacidade da moeda de preservar valor ao longo do tempo (reserva de valor).'},
-   214	
-   215	  {id:7,topic:'Moeda',diff:'hard',type:'mc',
-   216	   q:'[PEGADINHA] A "moeda-papel" e o "papel-moeda" são a mesma coisa: documentos emitidos com lastro 100% em metais preciosos.',
-   217	   opts:['Verdadeiro; ambos exigem lastro integral de metais preciosos','Falso; moeda-papel tem lastro integral (certificado de depósito), enquanto papel-moeda (fiduciário) não exige lastro integral','Falso; moeda-papel não tem lastro algum, ao contrário do papel-moeda','Verdadeiro; a distinção é apenas histórica e sem relevância conceitual'],
-   218	   ans:1, exp:'Moeda-papel = certificado de depósito com lastro de 100%. Papel-moeda (moeda fiduciária) surgiu quando as casas de custódia perceberam que nem todos resgatavam ao mesmo tempo e passaram a emitir sem lastro integral.'},
-   219	
-   220	  {id:8,topic:'Moeda',diff:'easy',type:'mc',
-   221	   q:'Qual era a função das "Casas de Custódia" na história da moeda?',
-   222	   opts:['Regular a taxa básica de juros da economia','Guardar metais preciosos e emitir certificados de depósito (moeda-papel)','Fiscalizar bancos comerciais e recolher compulsório','Financiar o déficit público via emissão de títulos'],
-   223	   ans:1, exp:'As Casas de Custódia guardavam ouro/prata dos comerciantes e emitiam certificados representativos — origem da moeda-papel.'},
-   224	
-   225	  {id:9,topic:'Moeda',diff:'hard',type:'mc',
-   226	   q:'Qual sequência CORRETA representa a evolução histórica das formas de moeda?',
-   227	   opts:['Moeda metálica → Escambo → Moeda-papel → Papel-moeda → Moeda bancária','Escambo → Moeda-mercadoria → Moeda metálica → Moeda-papel → Papel-moeda → Moeda bancária','Escambo → Papel-moeda → Moeda metálica → Moeda-mercadoria → Moeda bancária','Moeda bancária → Moeda-papel → Moeda metálica → Escambo'],
-   228	   ans:1, exp:'A progressão histórica é: Escambo → Moeda-mercadoria (gado, sal) → Moeda metálica (ouro/prata) → Moeda-papel (lastro 100%) → Papel-moeda (fiduciário) → Moeda bancária/escritural.'},
-   229	
-   230	  {id:10,topic:'Moeda',diff:'medium',type:'vf',
-   231	   q:'Características físicas da moeda incluem divisibilidade, durabilidade, transportabilidade, manuseabilidade e dificuldade de falsificação.',
-   232	   ans:true, exp:'Correto. Além das características econômicas (custo de estocagem e transação ≈ zero), a moeda exige essas características físicas.'},
-   233	
-   234	  // ---------- SISTEMA FINANCEIRO ----------
-   235	  {id:11,topic:'Sistema',diff:'easy',type:'mc',
-   236	   q:'O que é M1 na classificação dos agregados monetários?',
-   237	   opts:['Papel-moeda emitido + depósitos a prazo','Papel-moeda em poder do público + depósitos à vista nos bancos comerciais','M2 + quotas de renda fixa + operações compromissadas','M3 + títulos públicos de alta liquidez'],
-   238	   ans:1, exp:'M1 = PMPP + Depósitos à vista. É o agregado de maior liquidez imediata.'},
-   239	
-   240	  {id:12,topic:'Sistema',diff:'medium',type:'mc',
-   241	   q:'Qual agregado monetário inclui M2, quotas de fundos de renda fixa e operações compromissadas no SELIC?',
-   242	   opts:['M1','M2','M3','M4'],
-   243	   ans:2, exp:'M3 = M2 + quotas de fundos de renda fixa + operações compromissadas registradas no SELIC.'},
-   244	
-   245	  {id:13,topic:'Sistema',diff:'hard',type:'mc',
-   246	   q:'[PEGADINHA] O "multiplicador bancário" representa a capacidade ilimitada dos bancos de criar moeda, pois não há reserva compulsória.',
-   247	   opts:['Verdadeiro; em teoria, bancos podem criar moeda sem limite','Falso; o multiplicador representa o LIMITE do processo de multiplicação, restringido pelo compulsório e pelo encaixe técnico','Falso; somente o Banco Central pode criar moeda, não os bancos comerciais','Verdadeiro; o compulsório não afeta a criação de moeda escritural'],
-   248	   ans:1, exp:'O multiplicador bancário representa o LIMITE da expansão monetária. Compulsório (recolhido ao BC) e encaixe técnico restringem o processo.'},
-   249	
-   250	  {id:14,topic:'Sistema',diff:'medium',type:'mc',
-   251	   q:'Qual segmento de mercado atende às necessidades de financiamento de longo prazo relacionadas a investimentos em capital fixo?',
-   252	   opts:['Mercado Monetário','Mercado de Crédito','Mercado de Capitais','Mercado Cambial'],
-   253	   ans:2, exp:'O Mercado de Capitais financia médio e longo prazo (capital fixo). Inclui as bolsas de valores e é majoritariamente intermediado por instituições não bancárias.'},
-   254	
-   255	  {id:15,topic:'Sistema',diff:'easy',type:'mc',
-   256	   q:'Qual é a principal função do Banco Central enquanto "banqueiro dos bancos"?',
-   257	   opts:['Emitir papel-moeda para o público diretamente','Fiscalizar as operações bancárias na administração dos recursos dos correntistas','Conceder crédito diretamente a empresas e consumidores','Determinar os preços dos títulos no mercado de capitais'],
-   258	   ans:1, exp:'Na função de "banqueiro dos bancos", o BC fiscaliza as operações bancárias e a gestão dos recursos confiados pelos correntistas aos bancos comerciais.'},
-   259	
-   260	  {id:16,topic:'Sistema',diff:'medium',type:'mc',
-      261	   q:'O que é "encaixe técnico" no sistema bancário?',
-   262	   opts:['Parte dos depósitos repassada ao Banco Central como compulsório','Reserva que o banco comercial mantém para sua própria liquidez futura','Emissão de título de dívida pelo banco para captar recursos','Volume total de crédito concedido pelos bancos a pessoas físicas'],
-   263	   ans:1, exp:'Encaixe técnico é a parcela dos depósitos retida pelo banco comercial como "fundo de caixa" para garantir liquidez. Difere do compulsório (que vai ao BC).'},
-   264	
-   265	  {id:17,topic:'Sistema',diff:'hard',type:'mc',
-   266	   q:'[PEGADINHA] Segundo Carvalho et al., a principal diferença entre bancos comerciais e bancos de investimento é que apenas os bancos de investimento captam depósitos à vista.',
-   267	   opts:['Correto; bancos de investimento são os únicos a captar depósitos à vista','Incorreto; bancos comerciais captam depósitos à vista E a prazo; bancos de investimento captam principalmente a prazo e emitem títulos','Correto; ambos captam à vista, mas só bancos de investimento emitem títulos','Incorreto; bancos de investimento são proibidos de captar qualquer depósito'],
-   268	   ans:1, exp:'Bancos comerciais captam depósitos à vista (e a prazo). Bancos de investimento dependem principalmente de depósitos a prazo e emissão de títulos.'},
-   269	
-   270	  {id:18,topic:'Sistema',diff:'medium',type:'vf',
-   271	   q:'A intermediação financeira canaliza recursos dos agentes superavitários para os deficitários, operacionalizando os fluxos de financiamento indireto da economia.',
-   272	   ans:true, exp:'Correto. Essa é exatamente a função essencial dos intermediários financeiros, independentemente da estrutura institucional do sistema.'},
-   273	
-   274	  // ---------- BALANÇA DE PAGAMENTOS ----------
-   275	  {id:19,topic:'Balança',diff:'easy',type:'mc',
-   276	   q:'Qual foi o saldo aproximado da conta corrente do Brasil em 2020 e qual o principal fator explicativo?',
-   277	   opts:['Superávit de US$ 5,5 bi; aumento das exportações de manufaturados','Déficit de US$ 5,5 bi; queda nas importações e aumento de exportações agrícolas pela pandemia','Déficit de US$ 22,5 bi; recuperação da economia global','Déficit de US$ 61 bi; aumento das importações de energia'],
-   278	   ans:1, exp:'Em 2020 o déficit foi de apenas ~US$ 5,5 bi — o menor da série — graças à pandemia que reduziu importações e elevou exportações agrícolas.'},
-   279	
-   280	  {id:20,topic:'Balança',diff:'easy',type:'mc',
-   281	   q:'Qual ano registrou o MAIOR déficit em conta corrente do Brasil no período 2019-2023?',
-   282	   opts:['2019 (−US$ 50 bi)','2021 (−US$ 22,5 bi)','2022 (−US$ 61 bi)','2023 (−US$ 48 bi)'],
-   283	   ans:2, exp:'2022 foi o pior ano, com déficit de ~US$ 61 bi, puxado principalmente pelo crescimento nas importações de energia.'},
-   284	
-   285	  {id:21,topic:'Balança',diff:'medium',type:'mc',
-   286	   q:'Um déficit contínuo na balança de pagamentos tende a gerar qual sequência de efeitos?',
-   287	   opts:['Valorização da moeda → deflação → queda dos juros → crescimento','Desvalorização da moeda → inflação → aumento dos juros → desaceleração do crescimento','Aumento das exportações → superávit comercial → queda da dívida externa','Redução dos gastos públicos → superávit fiscal → estabilidade cambial'],
-   288	   ans:1, exp:'O déficit pressiona a moeda local para baixo, encarece importados (inflação), forçando o BC a elevar juros, o que desacelera o crescimento.'},
-   289	
-   290	  {id:22,topic:'Balança',diff:'medium',type:'mc',
-   291	   q:'Qual dos seguintes é um efeito do aumento da dívida externa decorrente de déficits contínuos na balança de pagamentos?',
-   292	   opts:['Redução do risco-país e maior atração de investimentos estrangeiros','Risco de default e perda de confiança de investidores estrangeiros','Queda nas taxas de juros domésticas','Valorização da moeda local'],
-   293	   ans:1, exp:'Se a dívida externa se torna insustentável, o risco de calote (default) aumenta, afastando investidores e reduzindo o fluxo de capitais.'},
-   294	
-   295	  {id:23,topic:'Balança',diff:'hard',type:'mc',
-   296	   q:'[PEGADINHA] O déficit na balança de pagamentos do Brasil em 2020 foi o maior da série 2019-2023, pois a pandemia interrompeu completamente as exportações.',
-   297	   opts:['Verdadeiro; a pandemia eliminou as exportações em 2020','Falso; 2020 teve o MENOR déficit (~US$ 5,5 bi) porque a pandemia reduziu importações e AUMENTOU exportações agrícolas','Verdadeiro; apenas produtos primários foram exportados, gerando superávit','Falso; 2020 teve superávit de US$ 5,5 bi, o único superávit da série'],
-   298	   ans:1, exp:'Pegadinha clássica: a pandemia REDUZIU importações e AUMENTOU exportações agrícolas, gerando o menor déficit da série (não superávit).'},
-   299	
-   300	  {id:24,topic:'Balança',diff:'medium',type:'vf',
-   301	   q:'Déficits consecutivos na conta corrente podem levar o país a se tornar mais dependente de capital externo, elevando sua vulnerabilidade em tempos de instabilidade global.',
-   302	   ans:true, exp:'Correto. A dependência de fluxos externos para financiar o déficit aumenta a vulnerabilidade a choques externos e crises de confiança.'},
-   303	
-   304	  {id:25,topic:'Balança',diff:'hard',type:'mc',
-   305	   q:'Qual afirmação descreve corretamente os "ajustes estruturais" necessários quando o déficit na balança de pagamentos é persistente?',
-   306	   opts:['Aumentar ainda mais as importações para estimular a competição interna','Reduzir compulsoriamente todas as exportações para equilibrar a conta','Aumentar a competitividade, diversificar a economia e incentivar exportações','Eliminar o câmbio flutuante e adotar câmbio fixo imediatamente'],
-   307	   ans:2, exp:'Os ajustes estruturais necessários incluem: aumentar competitividade, diversificar a pauta exportadora e reduzir dependência de importações.'},
-   308	
-   309	  // ---------- ECONOMIA CIRCULAR ----------
-   310	  {id:26,topic:'Circular',diff:'easy',type:'mc',
-   311	   q:'O que é Economia Circular?',
-   312	   opts:['Modelo linear de produção baseado em extração, uso e descarte','Modelo que visa reduzir, reutilizar e reciclar materiais, minimizando resíduos e maximizando a eficiência dos recursos','Sistema financeiro voltado para investimentos sustentáveis','Política macroeconômica de controle de emissão monetária'],
-   313	   ans:1, exp:'Economia Circular é o modelo que substitui o "extrair-produzir-descartar" por ciclos de redução, reutilização e reciclagem de materiais.'},
-   314	
-   315	  {id:27,topic:'Circular',diff:'easy',type:'mc',
-   316	   q:'Quando surgiu a Economia Circular como alternativa ao modelo linear?',
-   317	   opts:['Década de 1930, após a Grande Depressão','Década de 1970, com foco no uso consciente dos recursos naturais','Século XIX, durante a Revolução Industrial','Anos 2000, impulsionada pelos acordos de Paris'],
-   318	   ans:1, exp:'A Economia Circular surge nos anos 70 com o propósito de elevar o ciclo de vida das matérias-primas por meio de reutilização e reciclagem.'},
-   319	
-   320	  {id:28,topic:'Circular',diff:'easy',type:'mc',
-   321	   q:'Quais são os "3Rs" da Economia Circular?',
-   322	   opts:['Reciclar, Recuperar, Reparar','Reduzir, Reutilizar, Reciclar','Refletir, Reduzir, Reutilizar','Reaproveitar, Renovar, Responsabilizar'],
-   323	   ans:2, exp:'Os 3Rs são: Refletir (valorizar os recursos), Reduzir (usar menos recursos) e Reutilizar (reaproveitar materiais com potencial de remanufatura).'},
-   324	
-   325	  {id:29,topic:'Circular',diff:'medium',type:'mc',
-   326	   q:'O que é "Pegada Ambiental"?',
-   327	   opts:['Indicador de emissão de carbono apenas por veículos automotores','Medida que avalia o impacto das atividades humanas no meio ambiente, quantificando recursos usados e resíduos gerados','Taxa cobrada por órgãos ambientais sobre empresas poluidoras','Certificação emitida a empresas que aderem à Economia Circular'],
-   328	   ans:1, exp:'Pegada Ambiental mede o impacto humano no ambiente: recursos naturais utilizados + resíduos gerados pelas atividades.'},
-   329	
-   330	  {id:30,topic:'Circular',diff:'medium',type:'mc',
-   331	   q:'Qual é uma consequência NEGATIVA do modelo econômico linear?',
-   332	   opts:['Incentivo à inovação e ao design sustentável','Redução do desperdício industrial','Risco de esgotamento de matérias-primas e aumento dos custos de extração','Fortalecimento de políticas públicas de sustentabilidade'],
-   333	   ans:2, exp:'O modelo linear eleva o risco de esgotamento de matérias-primas; com menos recursos disponíveis, os custos de extração sobem, gerando instabilidade.'},
-   334	
-   335	  {id:31,topic:'Circular',diff:'medium',type:'vf',
-   336	   q:'Na Economia Circular, a geração de resíduos é completamente eliminada, chegando a zero.',
-   337	   ans:false, exp:'Incorreto. Na EC a geração de resíduos é MÍNIMA, não necessariamente zero. O objetivo é reduzir ao máximo, não uma eliminação total.'},
-   338	
-   339	  {id:32,topic:'Circular',diff:'hard',type:'mc',
-   340	   q:'[PEGADINHA] A Economia Circular tem como principal impulso o crescimento econômico, sendo a preservação ambiental um benefício secundário.',
-   341	   opts:['Correto; o crescimento econômico é o objetivo central da EC','Incorreto; a preservação ambiental é destacada como o PRINCIPAL impulso da EC, visando conservação para gerações futuras','Correto; a inovação tecnológica é o impulso central, não o ambiental','Incorreto; a EC não gera crescimento econômico, apenas benefícios ambientais'],
-   342	   ans:1, exp:'Pegadinha: a preservação ambiental é o PRINCIPAL impulso da EC. O crescimento econômico é um benefício importante, mas não o impulso central.'},
-   343	
-   344	  {id:33,topic:'Circular',diff:'hard',type:'mc',
-   345	   q:'Qual prática da Economia Circular envolve "projetar produtos e sistemas que facilitem a reutilização e reciclagem desde a concepção"?',
-   346	   opts:['Gestão de efluentes','Design circular','Economia compartilhada','Remanufatura de componentes'],
-   347	   ans:1, exp:'O design circular implica pensar no ciclo de vida completo do produto desde sua concepção, facilitando reutilização, reciclagem e recuperação de materiais.'},
-   348	
-   349	  {id:34,topic:'Circular',diff:'medium',type:'mc',
-   350	   q:'Qual dos seguintes benefícios a Economia Circular oferece para as EMPRESAS especificamente?',
-   351	   opts:['Apenas redução de custos com matéria-prima','Redução de custos, aumento da eficiência e melhoria da imagem institucional','Somente novos empregos no setor de reciclagem','Apenas cumprimento de metas governamentais de sustentabilidade'],
-   352	   ans:1, exp:'Para empresas, a EC traz: redução de custos, aumento de eficiência operacional e melhoria da imagem — além de novas oportunidades de negócio.'},
-   353	
-   354	  {id:35,topic:'Circular',diff:'easy',type:'vf',
-   355	   q:'O modelo econômico linear, predominante desde a Revolução Industrial, segue o padrão: extrair → produzir → descartar.',
-   356	   ans:true, exp:'Correto. O modelo linear é definido exatamente por essa sequência linear sem reaproveitamento, gerando volume crescente de resíduos.'},
-   357	];
-   358	
-   359	// ===== STATE =====
-   360	let state = {
-   361	  questions:[],
-   362	  current:0,
-   363	  answers:{},
-   364	  filterDiff:'all',
-   365	  filterTopic:'all',
-   366	  mode:'seq',
-   367	  timerSec:0,
-   368	  timerInterval:null,
-   369	  timeLeft:0
-   370	};
-   371	
-   372	function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-   373	
-   374	function buildQuestions(){
-   375	  let qs = ALL_QUESTIONS.filter(q=>
-   376	    (state.filterDiff==='all'||q.diff===state.filterDiff)&&
-   377	    (state.filterTopic==='all'||q.topic===state.filterTopic)
-   378	  );
-   379	  // Shuffle options for mc questions
-   380	  qs = qs.map(q=>{
-   381	    if(q.type==='mc'){
-   382	      const indexed = q.opts.map((o,i)=>({text:o,orig:i}));
-   383	      const shuffled = shuffle(indexed);
-   384	      return {...q, opts:shuffled.map(s=>s.text), ans:shuffled.findIndex(s=>s.orig===q.ans)};
-   385	    }
-   386	    return q;
-   387	  });
-   388	  if(state.mode==='rand') qs = shuffle(qs);
-   389	  return qs;
-   390	}
-   391	
-   392	function updateCountLabel(){
-   393	  let n = ALL_QUESTIONS.filter(q=>
-   394	    (state.filterDiff==='all'||q.diff===state.filterDiff)&&
-   395	    (state.filterTopic==='all'||q.topic===state.filterTopic)
-   396	  ).length;
-   397	  document.getElementById('q-count-label').textContent = n+' questões selecionadas';
-   398	}
-   399	
-   400	// Filter buttons logic
-   401	function setupFilters(){
-   402	  document.querySelectorAll('#diff-filters .filter-btn').forEach(btn=>{
-   403	    btn.addEventListener('click',()=>{
-   404	      document.querySelectorAll('#diff-filters .filter-btn').forEach(b=>b.classList.remove('active'));
-   405	      btn.classList.add('active');
-   406	      state.filterDiff = btn.dataset.diff;
-   407	      updateCountLabel();
-   408	    });
-   409	  });
-   410	  document.querySelectorAll('#topic-filters .filter-btn').forEach(btn=>{
-   411	    btn.addEventListener('click',()=>{
-   412	      document.querySelectorAll('#topic-filters .filter-btn').forEach(b=>b.classList.remove('active'));
-   413	      btn.classList.add('active');
-   414	      state.filterTopic = btn.dataset.topic;
-   415	      updateCountLabel();
-   416	    });
-   417	  });
-   418	  document.querySelectorAll('[data-mode]').forEach(btn=>{
-   419	    btn.addEventListener('click',()=>{
-   420	      document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
-   421	      btn.classList.add('active');
-   422	      state.mode = btn.dataset.mode;
-   423	    });
-   424	  });
-   425	  document.querySelectorAll('[data-timer]').forEach(btn=>{
-   426	    btn.addEventListener('click',()=>{
-   427	      document.querySelectorAll('[data-timer]').forEach(b=>b.classList.remove('active'));
-   428	      btn.classList.add('active');
-   429	      state.timerSec = parseInt(btn.dataset.timer);
-   430	    });
-   431	  });
-   432	}
-   433	
-   434	function showScreen(id){
-   435	  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');});
-   436	  document.getElementById(id).classList.add('active');
-   437	}
-   438	
-   439	function startQuiz(){
-   440	  state.questions = buildQuestions();
-   441	  if(!state.questions.length){alert('Nenhuma questão encontrada com esses filtros.');return;}
-   442	  state.current = 0;
-   443	  state.answers = {};
-   444	  showScreen('screen-quiz');
-   445	  renderQuestion();
-   446	}
-   447	
-   448	function renderQuestion(){
-   449	  const q = state.questions[state.current];
-   450	  const total = state.questions.length;
-   451	  const pct = ((state.current)/total)*100;
-   452	
-   453	  document.getElementById('q-number').textContent = `Questão ${state.current+1} de ${total}`;
-   454	  document.getElementById('prog-fill').style.width = pct+'%';
-   455	
-   456	  // Badge
-   457	  const diffLabel = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
-   458	  const diffClass = {easy:'badge-easy',medium:'badge-medium',hard:'badge-hard'};
-   459	  document.getElementById('badge-row').innerHTML =
-   460	    `<span class="badge ${diffClass[q.diff]}">${diffLabel[q.diff]}</span><span class="badge badge-topic">${q.topic}</span>`;
-   461	
-   462	  document.getElementById('q-text').textContent = q.q;
-   463	  const fb = document.getElementById('feedback');
-   464	  fb.style.display='none';fb.className='';
-   465	
-   466	  const answered = state.answers[state.current] !== undefined;
-   467	
-   468	  if(q.type==='vf'){
-   469	    document.getElementById('q-options').innerHTML = `
-   470	      <div class="vf-row">
-   471	        <button class="vf-btn" id="vf-true">✅ Verdadeiro</button>
-   472	        <button class="vf-btn" id="vf-false">❌ Falso</button>
-   473	      </div>`;
-   474	    if(answered){
-   475	      applyVF(q, state.answers[state.current]);
-   476	    } else {
-   477	      document.getElementById('vf-true').addEventListener('click',()=>answerVF(true));
-   478	      document.getElementById('vf-false').addEventListener('click',()=>answerVF(false));
-   479	    }
-   480	  } else {
-   481	    const letters = ['A','B','C','D'];
-   482	    document.getElementById('q-options').innerHTML = '<div class="options">'+
-   483	      q.opts.map((o,i)=>`<div class="opt" data-i="${i}"><span class="opt-letter">${letters[i]}</span><span>${o}</span></div>`).join('')+'</div>';
-   484	    if(answered){
-   485	      applyMC(q, state.answers[state.current]);
-   486	    } else {
-   487	      document.querySelectorAll('.opt').forEach(el=>{
-   488	        el.addEventListener('click',()=>answerMC(parseInt(el.dataset.i)));
-   489	      });
-   490	    }
-   491	  }
-   492	
-   493	  // Nav buttons
-   494	  document.getElementById('btn-prev').style.visibility = state.current>0?'visible':'hidden';
-   495	  document.getElementById('btn-next').textContent = state.current===total-1?'Ver Resultado →':'Próxima →';
-   496	
-   497	  // Timer
-   498	  clearInterval(state.timerInterval);
-   499	  const td = document.getElementById('timer-display');
-   500	  if(state.timerSec && !answered){
-   501	    state.timeLeft = state.timerSec;
-   502	    td.textContent = fmtTime(state.timeLeft);
-   503	    td.className = '';
-   504	    state.timerInterval = setInterval(()=>{
-   505	      state.timeLeft--;
-   506	      td.textContent = fmtTime(state.timeLeft);
-   507	      if(state.timeLeft<=10) td.className='warn';
-   508	      if(state.timeLeft<=5) td.className='danger';
-   509	      if(state.timeLeft<=0){
-   510	        clearInterval(state.timerInterval);
-   511	        // auto-skip with no answer
-   512	        if(state.answers[state.current]===undefined){
-   513	          state.answers[state.current] = null;
-   514	          showFeedback(q, null);
-   515	          lockOptions();
-   516	        }
-   517	      }
-   518	    },1000);
-   519	  } else {
-      520	    td.textContent = '';
-   521	  }
-   522	}
-   523	
-   524	function fmtTime(s){const m=Math.floor(s/60);return (m?m+'m':'')+String(s%60).padStart(2,'0')+'s';}
-   525	
-   526	function answerMC(i){
-   527	  clearInterval(state.timerInterval);
-   528	  state.answers[state.current] = i;
-   529	  applyMC(state.questions[state.current], i);
-   530	  showFeedback(state.questions[state.current], i);
-   531	}
-   532	function applyMC(q,i){
-   533	  document.querySelectorAll('.opt').forEach((el,idx)=>{
-   534	    el.classList.add('disabled');
-   535	    if(idx===q.ans) el.classList.add('correct');
-   536	    else if(idx===i && i!==q.ans) el.classList.add('wrong');
-   537	    else if(idx===i) el.classList.add('selected');
-   538	  });
-   539	  if(i===null) document.querySelectorAll('.opt').forEach(el=>el.classList.add('disabled'));
-   540	}
-   541	
-   542	function answerVF(val){
-   543	  clearInterval(state.timerInterval);
-   544	  state.answers[state.current] = val;
-   545	  applyVF(state.questions[state.current], val);
-   546	  showFeedback(state.questions[state.current], val);
-   547	}
-   548	function applyVF(q,val){
-   549	  const bt = document.getElementById('vf-true');
-   550	  const bf = document.getElementById('vf-false');
-   551	  if(!bt||!bf) return;
-   552	  bt.classList.add('disabled'); bf.classList.add('disabled');
-   553	  if(q.ans===true) bt.classList.add('correct'); else bt.classList.add(val===true?'wrong':'disabled');
-   554	  if(q.ans===false) bf.classList.add('correct'); else bf.classList.add(val===false?'wrong':'disabled');
-   555	}
-   556	function lockOptions(){
-   557	  document.querySelectorAll('.opt,.vf-btn').forEach(el=>el.classList.add('disabled'));
-   558	}
-   559	
-   560	function showFeedback(q,ans){
-   561	  const fb = document.getElementById('feedback');
-   562	  let correct = q.type==='vf' ? ans===q.ans : ans===q.ans;
-   563	  fb.className = correct?'correct':'wrong';
-   564	  fb.style.display = 'block';
-   565	  fb.textContent = (correct?'✅ Correto! ':'❌ Incorreto. ') + q.exp;
-   566	}
-   567	
-   568	// Nav
-   569	document.getElementById('btn-next').addEventListener('click',()=>{
-   570	  if(state.current===state.questions.length-1) showResults();
-   571	  else { state.current++; renderQuestion(); }
-   572	});
-   573	document.getElementById('btn-prev').addEventListener('click',()=>{
-   574	  if(state.current>0){ state.current--; renderQuestion(); }
-   575	});
-   576	
-   577	// Start
-   578	document.getElementById('btn-start').addEventListener('click',startQuiz);
-   579	document.getElementById('btn-restart').addEventListener('click',()=>{showScreen('screen-start');updateCountLabel();});
-   580	
-   581	// ===== RESULTS =====
-   582	function showResults(){
-   583	  clearInterval(state.timerInterval);
-   584	  const qs = state.questions;
-   585	  const total = qs.length;
-   586	  let correct = 0;
-   587	
-   588	  qs.forEach((q,i)=>{
-   589	    const a = state.answers[i];
-   590	    if(q.type==='vf'?a===q.ans:a===q.ans) correct++;
-   591	  });
-   592	
-   593	  const pct = Math.round((correct/total)*100);
-   594	  document.getElementById('res-score').textContent = pct+'%';
-   595	  document.getElementById('res-sub').textContent = `${correct} acertos de ${total} questões`;
-   596	
-   597	  // Perf by difficulty
-   598	  const diffs = ['easy','medium','hard'];
-   599	  const dLabels = {easy:'Fácil',medium:'Médio',hard:'Difícil'};
-   600	  const dColors = {easy:'#22c55e',medium:'#f59e0b',hard:'#ef4444'};
-   601	  let diffHTML = '';
-   602	  diffs.forEach(d=>{
-   603	    const dqs = qs.filter(q=>q.diff===d);
-   604	    if(!dqs.length) return;
-   605	    const dc = dqs.filter((q,i)=>{const idx=qs.indexOf(q);const a=state.answers[idx];return q.type==='vf'?a===q.ans:a===q.ans;}).length;
-   606	    const dp = Math.round((dc/dqs.length)*100);
-   607	    diffHTML += `<div class="stat-row"><span style="min-width:60px">${dLabels[d]}</span>
-   608	      <div class="perf-bar"><div class="perf-fill" style="width:${dp}%;background:${dColors[d]}"></div></div>
-   609	      <span style="min-width:70px;text-align:right;font-weight:700">${dc}/${dqs.length} (${dp}%)</span></div>`;
-   610	  });
-   611	  document.getElementById('perf-diff').innerHTML = diffHTML;
-   612	
-   613	  // Perf by topic
-   614	  const topics = [...new Set(qs.map(q=>q.topic))];
-   615	  let topicHTML = '';
-   616	  let lowTopics = [];
-   617	  topics.forEach(t=>{
-   618	    const tqs = qs.filter(q=>q.topic===t);
-   619	    const tc = tqs.filter((q)=>{const idx=qs.indexOf(q);const a=state.answers[idx];return q.type==='vf'?a===q.ans:a===q.ans;}).length;
-   620	    const tp = Math.round((tc/tqs.length)*100);
-   621	    topicHTML += `<div class="stat-row"><span style="min-width:110px;font-size:.9rem">${t}</span>
-   622	      <div class="perf-bar"><div class="perf-fill" style="width:${tp}%;background:var(--primary)"></div></div>
-   623	      <span style="min-width:70px;text-align:right;font-weight:700">${tc}/${tqs.length} (${tp}%)</span></div>`;
-   624	    if(tp<60) lowTopics.push({t,tp});
-   625	  });
-   626	  document.getElementById('perf-topic').innerHTML = topicHTML;
-   627	
-   628	  // Recommendations
-   629	  const rc = document.getElementById('rec-card');
-   630	  if(lowTopics.length){
-   631	    rc.style.display='block';
-   632	    document.getElementById('rec-list').innerHTML = lowTopics.map(x=>`
-   633	      <div style="padding:10px 12px;background:#fef9c3;border-radius:8px;margin-bottom:8px;font-size:.9rem">
-   634	        ⚠️ <strong>${x.t}</strong> — Aproveitamento ${x.tp}%. Recomendamos revisar este tópico.
-   635	      </div>`).join('');
-   636	  } else rc.style.display='none';
-   637	
-   638	  // Error review
-   639	  let errHTML = '';
-   640	  qs.forEach((q,i)=>{
-   641	    const a = state.answers[i];
-   642	    const isCorrect = q.type==='vf' ? a===q.ans : a===q.ans;
-   643	    if(!isCorrect){
-   644	      const letters=['A','B','C','D'];
-   645	      let marked = a===null||a===undefined ? '(sem resposta)' : (q.type==='vf' ? (a?'Verdadeiro':'Falso') : `${letters[a]}) ${q.opts[a]}`);
-   646	      let correct = q.type==='vf' ? (q.ans?'Verdadeiro':'Falso') : `${letters[q.ans]}) ${q.opts[q.ans]}`;
-   647	      errHTML += `<div class="review-item r-wrong">
-   648	        <div class="review-head">❌ <span>${q.q}</span></div>
-   649	        <div class="review-body">
-   650	          <p>📌 Sua resposta: <strong style="color:var(--danger)">${marked}</strong></p>
-   651	          <p>✅ Resposta correta: <strong style="color:var(--success)">${correct}</strong></p>
-   652	          <p style="margin-top:6px;color:var(--text)">${q.exp}</p>
-   653	        </div></div>`;
-   654	    }
-   655	  });
-   656	  document.getElementById('error-review').innerHTML = errHTML || '<p style="color:var(--success);font-weight:600">🎉 Parabéns! Nenhum erro a revisar.</p>';
-   657	
-   658	  showScreen('screen-results');
-   659	}
-   660	
-   661	// Init
-   662	setupFilters();
-   663	updateCountLabel();
-   664	</script>
-   665	</body>
-   666	</html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz · Percepção & Motivação</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;0,700;0,900;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #faf8f5;
+  --card:      #ffffff;
+  --ink:       #1c1a17;
+  --muted:     #7a7166;
+  --border:    #e8e4dd;
+  --accent:    #c45c12;
+  --accent-l:  #fdf2ea;
+  --blue:      #1e4d8c;
+  --blue-l:    #eaf0f9;
+  --easy:      #2a7a4b;
+  --easy-bg:   #eaf5ee;
+  --med:       #9a6e00;
+  --med-bg:    #fdf8e3;
+  --hard:      #b52a4a;
+  --hard-bg:   #fdedf1;
+  --correct:   #2a7a4b;
+  --wrong:     #b52a4a;
+  --radius:    16px;
+  --shadow:    0 4px 24px rgba(28,26,23,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body {
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  font-size:15px;
+  line-height:1.6;
+}
+
+/* ── STRIPE HEADER ── */
+header {
+  background: linear-gradient(135deg,#1c1a17 60%,#2e2820);
+  padding: 0 32px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.logo-pill {
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 4px 11px;
+  font-family:'Fraunces',serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: .04em;
+  flex-shrink:0;
+}
+header h1 {
+  font-family:'Fraunces',serif;
+  font-size: clamp(14px,2vw,19px);
+  font-weight: 600;
+  color: #fff;
+  flex:1;
+  letter-spacing:-.02em;
+}
+#prog-wrap { display:flex;align-items:center;gap:10px;min-width:160px; }
+#prog-track {
+  flex:1;height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;
+}
+#prog-fill {
+  height:100%;background:var(--accent);border-radius:99px;
+  transition:width .4s cubic-bezier(.4,0,.2,1);width:0;
+}
+#prog-lbl { font-size:12px;color:rgba(255,255,255,.55);white-space:nowrap; }
+
+/* ── CONTROLS ── */
+#controls {
+  max-width:860px;margin:24px auto 0;padding:0 20px;
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+}
+.flabel {
+  font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);
+}
+.chip {
+  border:1.5px solid var(--border);background:var(--card);border-radius:99px;
+  padding:5px 15px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12.5px;
+  cursor:pointer;color:var(--ink);transition:all .16s;font-weight:500;
+}
+.chip:hover{background:var(--border);}
+.chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.chip.e.active{background:var(--easy);border-color:var(--easy);}
+.chip.m.active{background:var(--med);border-color:var(--med);}
+.chip.h.active{background:var(--hard);border-color:var(--hard);}
+.vline{width:1px;height:22px;background:var(--border);}
+.shuffle-wrap {
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none;
+}
+.tog-track {
+  width:34px;height:18px;background:var(--border);border-radius:99px;
+  position:relative;transition:background .2s;flex-shrink:0;
+}
+.tog-track.on{background:var(--accent);}
+.tog-thumb {
+  position:absolute;top:3px;left:3px;width:12px;height:12px;
+  border-radius:50%;background:#fff;transition:left .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.tog-track.on .tog-thumb{left:19px;}
+
+/* ── WRAPPER ── */
+#wrap { max-width:860px;margin:0 auto;padding:24px 20px 80px; }
+
+/* ── START SCREEN ── */
+#start {
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  border:1.5px solid var(--border);padding:52px 44px;text-align:center;
+  margin-top:12px;
+}
+#start h2 {
+  font-family:'Fraunces',serif;font-size:clamp(22px,4vw,32px);font-weight:900;
+  letter-spacing:-.03em;margin-bottom:10px;
+}
+#start h2 em{color:var(--accent);font-style:normal;}
+#start p{color:var(--muted);font-size:14px;margin-bottom:32px;max-width:420px;margin-left:auto;margin-right:auto;}
+.stat-row{display:flex;justify-content:center;gap:16px;margin-bottom:36px;flex-wrap:wrap;}
+.stat-box{
+  background:var(--bg);border-radius:12px;padding:14px 20px;min-width:80px;
+  border:1.5px solid var(--border);text-align:center;
+}
+.stat-box .n{font-family:'Fraunces',serif;font-size:26px;font-weight:700;line-height:1;}
+.stat-box .l{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
+.btn-go {
+  background:var(--accent);color:#fff;border:none;border-radius:12px;
+  padding:15px 40px;font-family:'Fraunces',serif;font-size:16px;font-weight:700;
+  cursor:pointer;transition:transform .15s,background .15s;letter-spacing:-.01em;
+}
+.btn-go:hover{background:#a84d0e;transform:translateY(-2px);}
+
+/* ── QUESTION CARD ── */
+.q-card {
+  background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+  border:1.5px solid var(--border);padding:34px 36px 28px;
+  animation:rise .22s ease;
+}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.q-meta{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.qnum{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+.bdg{border-radius:6px;padding:3px 8px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.bdg-e{background:var(--easy-bg);color:var(--easy);}
+.bdg-m{background:var(--med-bg);color:var(--med);}
+.bdg-h{background:var(--hard-bg);color:var(--hard);}
+.bdg-tp{background:var(--bg);color:var(--muted);font-size:10.5px;border-radius:6px;padding:3px 8px;font-weight:500;}
+.bdg-trick{background:#fff3e0;color:#c45c12;font-size:10px;border-radius:6px;padding:2px 7px;font-weight:700;}
+
+.q-text{font-size:16px;font-weight:500;line-height:1.6;margin-bottom:22px;color:var(--ink);}
+
+/* ── OPTIONS (4-choice) ── */
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  display:flex;align-items:flex-start;gap:12px;padding:13px 16px;
+  border:1.5px solid var(--border);border-radius:11px;cursor:pointer;
+  transition:all .14s;background:var(--card);
+}
+.opt:hover:not(.dis){border-color:var(--accent);background:var(--accent-l);}
+.opt.sel{border-color:var(--accent);background:var(--accent-l);}
+.opt.ok{border-color:var(--correct);background:var(--easy-bg);}
+.opt.bad{border-color:var(--wrong);background:var(--hard-bg);}
+.opt.dis{cursor:default;}
+.let{
+  width:26px;height:26px;border-radius:7px;background:var(--bg);
+  font-family:'Fraunces',serif;font-size:12px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  color:var(--muted);transition:all .14s;
+}
+.opt.sel .let{background:var(--accent);color:#fff;}
+.opt.ok .let{background:var(--correct);color:#fff;}
+.opt.bad .let{background:var(--wrong);color:#fff;}
+.opt-txt{font-size:14px;line-height:1.45;padding-top:4px;}
+
+/* ── V/F OPTIONS ── */
+.vf-wrap{display:flex;gap:12px;}
+.vf-btn{
+  flex:1;padding:16px;border:1.5px solid var(--border);border-radius:12px;
+  cursor:pointer;font-family:'Fraunces',serif;font-size:17px;font-weight:700;
+  background:var(--card);color:var(--ink);transition:all .14s;text-align:center;
+}
+.vf-btn:hover:not(.dis){border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
+.vf-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
+.vf-btn.ok{border-color:var(--correct);background:var(--easy-bg);color:var(--correct);}
+.vf-btn.bad{border-color:var(--wrong);background:var(--hard-bg);color:var(--wrong);}
+.vf-btn.dis{cursor:default;}
+
+/* ── FEEDBACK ── */
+.fb{
+  margin-top:14px;padding:13px 16px;border-radius:10px;
+  font-size:13.5px;line-height:1.5;display:none;
+}
+.fb.show{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.fb.ok{background:var(--easy-bg);color:#1a5030;border-left:3px solid var(--correct);}
+.fb.bad{background:var(--hard-bg);color:#7a1030;border-left:3px solid var(--wrong);}
+.fb-icon{font-weight:700;margin-right:5px;}
+
+.q-foot{display:flex;justify-content:flex-end;margin-top:18px;}
+.btn-next{
+  background:var(--ink);color:#fff;border:none;border-radius:9px;
+  padding:10px 24px;font-family:'Fraunces',serif;font-size:13px;
+  font-weight:700;cursor:pointer;display:none;transition:background .14s;
+}
+.btn-next:hover{background:#2e2820;}
+.btn-next.show{display:block;}
+
+/* ── RESULTS ── */
+#results{display:none;}
+.res-hero{
+  background:linear-gradient(135deg,#1c1a17,#2e2820);color:#fff;
+  border-radius:var(--radius);padding:40px;margin-bottom:20px;
+  display:flex;gap:36px;align-items:center;flex-wrap:wrap;
+}
+.ring-wrap{position:relative;width:110px;height:110px;flex-shrink:0;}
+.ring-svg{width:110px;height:110px;transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:rgba(255,255,255,.12);stroke-width:8;}
+.ring-fill{
+  fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;
+  stroke-dasharray:283;stroke-dashoffset:283;
+  transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1);
+}
+.ring-label{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-size:22px;font-weight:900;
+}
+.res-info{flex:1;}
+.res-info h2{font-family:'Fraunces',serif;font-size:clamp(20px,3vw,28px);font-weight:900;letter-spacing:-.02em;margin-bottom:6px;}
+.res-info p{opacity:.65;font-size:13.5px;margin-bottom:18px;}
+.res-nums{display:flex;gap:20px;flex-wrap:wrap;}
+.res-num .n{font-family:'Fraunces',serif;font-size:24px;font-weight:700;line-height:1;}
+.res-num .l{font-size:10.5px;opacity:.55;text-transform:uppercase;letter-spacing:.05em;}
+
+.panel{
+  background:var(--card);border-radius:var(--radius);border:1.5px solid var(--border);
+  box-shadow:var(--shadow);padding:28px 30px;margin-bottom:18px;
+}
+.panel-title{
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:18px;
+}
+.diff-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.diff-row:last-child{margin-bottom:0;}
+.diff-lbl{width:65px;font-size:13px;font-weight:600;flex-shrink:0;}
+.bar-t{flex:1;height:9px;background:var(--bg);border-radius:99px;overflow:hidden;}
+.bar-f{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1);width:0;}
+.diff-p{width:40px;text-align:right;font-size:12.5px;font-weight:600;color:var(--muted);flex-shrink:0;}
+
+.topic-row{margin-bottom:14px;}
+.topic-name{font-size:13px;font-weight:500;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;}
+.warn{font-size:11px;color:var(--accent);font-weight:700;}
+
+.rev-card{
+  background:var(--bg);border-radius:11px;padding:18px 20px;margin-bottom:12px;
+  border:1.5px solid var(--border);
+}
+.rev-q{font-size:14px;font-weight:500;margin-bottom:10px;line-height:1.5;}
+.rv{font-size:13px;margin-bottom:3px;}
+.rv .lbl{font-weight:600;}
+.rv.bad{color:var(--wrong);}
+.rv.ok{color:var(--correct);}
+.rv-exp{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5;background:var(--card);padding:10px 12px;border-radius:8px;border:1px solid var(--border);}
+
+.empty-rev{text-align:center;padding:36px;color:var(--muted);font-size:15px;background:var(--card);border-radius:var(--radius);border:1.5px dashed var(--border);}
+
+.btn-restart{
+  display:inline-block;background:var(--accent);color:#fff;border:none;
+  border-radius:12px;padding:14px 36px;font-family:'Fraunces',serif;
+  font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:background .15s;
+}
+.btn-restart:hover{background:#a84d0e;}
+
+@media(max-width:600px){
+  header{padding:0 16px;}
+  #prog-wrap{min-width:unset;width:100%;}
+  .q-card{padding:22px 18px;}
+  .res-hero{padding:26px 22px;gap:22px;}
+  #start{padding:36px 22px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-pill">Quiz</div>
+  <h1>Percepção & Motivação</h1>
+  <div id="prog-wrap">
+    <div id="prog-track"><div id="prog-fill"></div></div>
+    <span id="prog-lbl">0 / 0</span>
+  </div>
+</header>
+
+<div id="controls">
+  <span class="flabel">Filtrar</span>
+  <button class="chip active" data-f="all">Todas</button>
+  <button class="chip e" data-f="easy">Fácil</button>
+  <button class="chip m" data-f="med">Médio</button>
+  <button class="chip h" data-f="hard">Difícil</button>
+  <div class="vline"></div>
+  <label class="shuffle-wrap">
+    <span>Embaralhar</span>
+    <div class="tog-track" id="tog"><div class="tog-thumb"></div></div>
+  </label>
+</div>
+
+<div id="wrap">
+
+<div id="start">
+  <h2>Percepção &<br><em>Motivação</em></h2>
+  <p>Questões elaboradas com base nos conceitos de percepção e nas principais teorias motivacionais de Maslow, McClelland, McGregor, Herzberg, Vroom e Adams.</p>
+  <div class="stat-row">
+    <div class="stat-box"><div class="n" id="s-tot">—</div><div class="l">Questões</div></div>
+    <div class="stat-box"><div class="n" style="color:var(--easy)">33%</div><div class="l">Fácil</div></div>
+    <div class="stat-box"><div class="n" style="color:var(--med)">42%</div><div class="l">Médio</div></div>
+    <div class="stat-box"><div class="n" style="color:var(--hard)">25%</div><div class="l">Difícil</div></div>
+  </div>
+  <button class="btn-go" id="btn-start">Começar →</button>
+</div>
+
+<div id="quiz" style="display:none"></div>
+
+<div id="results">
+  <div class="res-hero">
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 100 100">
+        <circle class="ring-track" cx="50" cy="50" r="45"/>
+        <circle class="ring-fill" id="ring-fill" cx="50" cy="50" r="45"/>
+      </svg>
+      <div class="ring-label" id="ring-lbl">0%</div>
+    </div>
+    <div class="res-info">
+      <h2 id="res-head"></h2>
+      <p id="res-sub"></p>
+      <div class="res-nums">
+        <div class="res-num"><div class="n" style="color:var(--correct)" id="r-c">0</div><div class="l">Corretas</div></div>
+        <div class="res-num"><div class="n" style="color:var(--wrong)" id="r-w">0</div><div class="l">Erradas</div></div>
+        <div class="res-num"><div class="n" id="r-t">0</div><div class="l">Total</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Desempenho por Dificuldade</div>
+    <div class="diff-row">
+      <div class="diff-lbl" style="color:var(--easy)">Fácil</div>
+      <div class="bar-t"><div class="bar-f" id="bf-e" style="background:var(--easy)"></div></div>
+      <div class="diff-p" id="bp-e">—</div>
+    </div>
+    <div class="diff-row">
+      <div class="diff-lbl" style="color:var(--med)">Médio</div>
+      <div class="bar-t"><div class="bar-f" id="bf-m" style="background:var(--med)"></div></div>
+      <div class="diff-p" id="bp-m">—</div>
+    </div>
+    <div class="diff-row">
+      <div class="diff-lbl" style="color:var(--hard)">Difícil</div>
+      <div class="bar-t"><div class="bar-f" id="bf-h" style="background:var(--hard)"></div></div>
+      <div class="diff-p" id="bp-h">—</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Desempenho por Tópico</div>
+    <div id="topic-bars"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Revisão de Erros</div>
+    <div id="review-list"></div>
+  </div>
+
+  <div style="text-align:center;padding-bottom:20px;">
+    <button class="btn-restart" id="btn-restart">↺ Recomeçar</button>
+  </div>
+</div>
+
+</div><script>
+// ────────────────────────────────────────────
+// QUESTÕES
+// ────────────────────────────────────────────
+const QS = [
+  // ══ FÁCEIS ══
+  {
+    diff:'easy', topic:'Percepção', vf:true, trick:false,
+    text:'VERDADEIRO OU FALSO: A percepção humana reflete exatamente a realidade objetiva do ambiente em que estamos inseridos.',
+    opts:['Verdadeiro','Falso'],
+    correct:1,
+    exp:'Falso. O material afirma que a percepção não reflete a realidade objetiva[cite: 14]. Vemos o mundo da forma como fomos condicionados a vê-lo[cite: 14].'
+  },
+  {
+    diff:'easy', topic:'Motivação', vf:true, trick:false,
+    text:'Na Teoria de Maslow, a hierarquia das necessidades deve ser entendida como um processo cíclico, onde as necessidades se revezam continuamente.',
+    opts:['Verdadeiro','Falso'],
+    correct:0,
+    exp:'Verdadeiro. A hierarquia deve ser entendida como algo cíclico[cite: 52]. Na medida em que uma necessidade inferior não é satisfeita, ela prevalecerá em detrimento de outra[cite: 52].'
+  },
+  {
+    diff:'easy', topic:'Motivação', vf:false, trick:false,
+    text:'Stacy Adams, na Teoria da Equidade, propõe que o trabalhador compara seu esforço (entrada) e o resultado obtido. Quais são as três categorias de comparação que ele utiliza?',
+    opts:['O chefe, a equipe e o mercado.','O outro, o sistema e ele próprio.','O salário, o benefício e a promoção.','A expectativa, a instrumentalidade e a valência.'],
+    correct:1,
+    exp:'O trabalhador utiliza três categorias para estabelecer o seu processo de comparação: o outro, o sistema, ele próprio[cite: 118].'
+  },
+  {
+    diff:'easy', topic:'Percepção', vf:true, trick:false,
+    text:'VERDADEIRO OU FALSO: Para garantir a ética no processo decisório, o diálogo é considerado o melhor caminho para fundamentar uma escolha.',
+    opts:['Verdadeiro','Falso'],
+    correct:0,
+    exp:'Verdadeiro. Para fazer valer a ética, é fundamental garantir transparência e tratar igualmente as partes. Além disso, o diálogo é o melhor caminho para fundamentar uma escolha[cite: 38, 39, 40].'
+  },
+
+  // ══ MÉDIOS ══
+  {
+    diff:'med', topic:'Percepção', vf:false, trick:false,
+    text:'De acordo com a Teoria da Atribuição de Soto, se um funcionário age da mesma forma constantemente (ex: chega atrasado todos os dias), o observador atribuirá esse comportamento a uma causa interna. Qual fator explica isso?',
+    opts:['Consenso','Coerência','Diferenciação','Projeção'],
+    correct:1,
+    exp:'A Coerência ocorre quando o observador busca um padrão constante nas ações[cite: 27]. Se a pessoa chega sempre atrasada, a atribuição será a uma causa interna[cite: 26].'
+  },
+  {
+    diff:'med', topic:'Motivação', vf:false, trick:false,
+    text:'Segundo a Teoria de McClelland, qual necessidade descreve indivíduos que tendem a ser acolhedores, simpáticos e que gostam do contato permanente com outras pessoas?',
+    opts:['Necessidade de Realização','Necessidade de Poder Pessoal','Necessidade de Associação','Necessidade de Autorrealização'],
+    correct:2,
+    exp:'A Necessidade de Associação descreve pessoas acolhedoras e simpáticas em seus relacionamentos[cite: 56]. Elas valorizam a amizade e gostam do contato permanente com as outras pessoas[cite: 56].'
+  },
+  {
+    diff:'med', topic:'Motivação', vf:false, trick:false,
+    text:'Na Teoria da Expectativa de Vroom, o termo "Instrumentalidade" é definido como:',
+    opts:['O grau de valor ou importância que a recompensa tem para a pessoa.','A crença de que um maior esforço produzirá um melhor desempenho organizacional.','A possibilidade da ação de se atingir o objetivo ser recompensadora.','A busca contínua por poder social e status dentro da organização.'],
+    correct:2,
+    exp:'Instrumentalidade é a possibilidade da ação de se atingir o objetivo ser recompensadora[cite: 112]. A importância do objetivo é a Valência[cite: 111].'
+  },
+  {
+    diff:'med', topic:'Motivação', vf:false, trick:false,
+    text:'Na Teoria Bifatorial de Herzberg, a simples eliminação de fatores higiênicos ruins (como aumentar salários e melhorar o ambiente) resultará em:',
+    opts:['Alta motivação e satisfação plena com o trabalho.','Aumento imediato da necessidade de autorrealização da equipe.','Adoção espontânea das premissas da Teoria Y.','Prevenção da insatisfação, mas não necessariamente gerará satisfação.'],
+    correct:3,
+    exp:'Os fatores extrínsecos (higiênicos) previnem a insatisfação no trabalho[cite: 86]. A presença desses fatores não leva à satisfação, mas a sua ausência leva à insatisfação[cite: 86]. O oposto de satisfação não é a insatisfação[cite: 82].'
+  },
+  {
+    diff:'med', topic:'Percepção', vf:false, trick:false,
+    text:'O processo de "Efeito de Halo" durante o julgamento das pessoas consiste em:',
+    opts:['Projetar as próprias características no comportamento de terceiros.','Julgar alguém com base nos estereótipos do grupo social ao qual pertence.','Formar uma impressão da pessoa a partir de uma só característica.','Comparar o desempenho de um funcionário diretamente com o do colega ao lado.'],
+    correct:2,
+    exp:'O Efeito de Halo consiste na impressão da pessoa a partir de uma só característica[cite: 33]. Um traço de comportamento serve de base para uma generalização a respeito da conduta da pessoa[cite: 34].'
+  },
+
+  // ══ DIFÍCEIS ══
+  {
+    diff:'hard', topic:'Motivação', vf:false, trick:true,
+    text:'[ATENÇÃO] Com base nos estudos de Douglas McGregor, qual das seguintes afirmações sobre a Teoria Y é validada e comprovada pelo material?',
+    opts:['A adoção da Teoria Y garante matematicamente um aumento na motivação da equipe.','Não existem evidências empíricas de que aceitar a Teoria Y resulte em um trabalhador mais motivado.','A Teoria Y afirma que os trabalhadores devem ser coagidos para evitar responsabilidades.','McGregor concluiu que a Teoria X era, na prática, superior à Teoria Y.'],
+    correct:1,
+    exp:'Pegadinha! Embora McGregor considerasse as premissas da teoria Y mais válidas [cite: 77], o material ressalta que não existem evidências de que a aceitação da teoria Y resulte em um trabalhador mais motivado[cite: 78].'
+  },
+  {
+    diff:'hard', topic:'Percepção', vf:false, trick:false,
+    text:'Ao julgar o comportamento de outras pessoas, é comum um gerente atribuir o fraco desempenho da equipe de vendas exclusivamente à preguiça dos funcionários, ignorando o impacto de um novo produto da concorrência. Isso ilustra a tendência de:',
+    opts:['Projetar no outro as frustrações da própria liderança corporativa.','Superestimar as causas internas ou pessoais na hora do julgamento.','Cometer um viés de Consenso Elevado durante a observação social.','Dar ênfase excessiva ao contexto situacional (causas externas).'],
+    correct:1,
+    exp:'Quando julgamos o comportamento de outras pessoas, tendemos a superestimar as causas internas ou pessoais[cite: 28]. Por exemplo, um gerente que atribui o fraco desempenho à preguiça, ignorando fatores situacionais[cite: 29].'
+  },
+  {
+    diff:'hard', topic:'Percepção', vf:false, trick:true,
+    text:'[ATENÇÃO] Segundo os fundamentos da percepção apresentados no texto, indivíduos muito maduros intelectualmente tendem a desenvolver uma visão de mundo mais fechada, piorando a sua percepção geral.',
+    opts:['Verdadeiro','Falso'],
+    correct:1,
+    exp:'Pegadinha! O material afirma exatamente o contrário: quanto mais maduro intelectualmente, melhor é a sua percepção[cite: 12].'
+  }
+];
+
+// ────────────────────────────────────────────
+// ESTADO
+// ────────────────────────────────────────────
+let pool=[], answers=[], cur=0, shuffling=false, filterVal='all';
+
+// ────────────────────────────────────────────
+// BOOT
+// ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('s-tot').textContent = QS.length;
+  document.getElementById('controls').style.display='none';
+
+  document.getElementById('btn-start').onclick = startQuiz;
+  document.getElementById('btn-restart').onclick = () => {
+    document.getElementById('results').style.display='none';
+    document.getElementById('start').style.display='block';
+    document.getElementById('controls').style.display='none';
+  };
+
+  document.querySelectorAll('[data-f]').forEach(b=>{
+    b.onclick=()=>{
+      filterVal=b.dataset.f;
+      document.querySelectorAll('[data-f]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+    };
+  });
+
+  document.querySelector('.shuffle-wrap').onclick=()=>{
+    shuffling=!shuffling;
+    document.getElementById('tog').classList.toggle('on',shuffling);
+  };
+});
+
+function startQuiz(){
+  pool = filterVal==='all' ? [...QS] : QS.filter(q=>q.diff===filterVal);
+  if(shuffling) pool=shuffle(pool);
+  answers=new Array(pool.length).fill(null);
+  cur=0;
+  document.getElementById('start').style.display='none';
+  document.getElementById('results').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  document.getElementById('controls').style.display='none';
+  prog();
+  render();
+}
+
+// ────────────────────────────────────────────
+// RENDER QUESTION
+// ────────────────────────────────────────────
+function render(){
+  if(cur>=pool.length){showResults();return;}
+  const q=pool[cur];
+  const dMap={easy:'Fácil',med:'Médio',hard:'Difícil'};
+  const bMap={easy:'bdg-e',med:'bdg-m',hard:'bdg-h'};
+  const qEl=document.getElementById('quiz');
+
+  let innerHTML = `
+    <div class="q-card">
+      <div class="q-meta">
+        <span class="qnum">Questão ${cur+1} de ${pool.length}</span>
+        <span class="bdg ${bMap[q.diff]}">${dMap[q.diff]}</span>
+        <span class="bdg bdg-tp">${q.topic}</span>
+        ${q.trick?'<span class="bdg-trick">⚠ Atenção</span>':''}
+      </div>
+      <div class="q-text">${q.text}</div>`;
+
+  if(q.vf){
+    innerHTML+=`<div class="vf-wrap">
+      <button class="vf-btn" onclick="pick(0)">Verdadeiro</button>
+      <button class="vf-btn" onclick="pick(1)">Falso</button>
+    </div>`;
+  } else {
+    const letters=['A','B','C','D'];
+    innerHTML+=`<div class="opts">`;
+    q.opts.forEach((o,i)=>{
+      innerHTML+=`<div class="opt" data-i="${i}" onclick="pick(${i})">
+        <div class="let">${letters[i]}</div>
+        <div class="opt-txt">${o}</div>
+      </div>`;
+    });
+    innerHTML+=`</div>`;
+  }
+
+  innerHTML+=`
+      <div class="fb" id="fb"></div>
+      <div class="q-foot"><button class="btn-next" id="btn-nxt" onclick="nextQ()">${cur<pool.length-1?'Próxima →':'Ver Resultado ✓'}</button></div>
+    </div>`;
+
+  qEl.innerHTML=innerHTML;
+  prog();
+}
+
+function pick(idx){
+  if(answers[cur]!==null) return;
+  answers[cur]=idx;
+  const q=pool[cur];
+  const ok=idx===q.correct;
+  const fb=document.getElementById('fb');
+
+  if(q.vf){
+    document.querySelectorAll('.vf-btn').forEach((b,i)=>{
+      b.classList.add('dis');
+      if(i===idx) b.classList.add(ok?'ok':'bad');
+      if(i===q.correct && !ok) b.classList.add('ok');
+    });
+  } else {
+    document.querySelectorAll('.opt').forEach((o,i)=>{
+      o.classList.add('dis');
+      if(i===idx) o.classList.add(ok?'ok':'bad');
+      if(i===q.correct && !ok) o.classList.add('ok');
+    });
+  }
+
+  fb.className=`fb show ${ok?'ok':'bad'}`;
+  fb.innerHTML=`<span class="fb-icon">${ok?'✓ Correto!':'✗ Incorreto!'}</span> ${q.exp}`;
+  const btn=document.getElementById('btn-nxt');
+  btn.classList.add('show');
+  prog();
+}
+
+function nextQ(){ cur++; render(); }
+
+function prog(){
+  const done=answers.filter(a=>a!==null).length;
+  const pct=pool.length?done/pool.length*100:0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-lbl').textContent=`${done} / ${pool.length}`;
+}
+
+// ────────────────────────────────────────────
+// RESULTS
+// ────────────────────────────────────────────
+function showResults(){
+  document.getElementById('quiz').style.display='none';
+  const rs=document.getElementById('results');
+  rs.style.display='block';
+
+  const correct=answers.filter((a,i)=>a===pool[i].correct).length;
+  const total=pool.length;
+  const pct=Math.round(correct/total*100);
+
+  const circ=2*Math.PI*45;
+  const offset=circ-(pct/100*circ);
+  setTimeout(()=>{ document.getElementById('ring-fill').style.strokeDashoffset=offset; },100);
+  document.getElementById('ring-lbl').textContent=pct+'%';
+
+  const head = pct>=85?'🏆 Excelente!':pct>=65?'👍 Bom resultado!':'📚 Continue estudando!';
+  document.getElementById('res-head').textContent=head;
+  document.getElementById('res-sub').textContent=`${correct} de ${total} questões corretas — ${pct}% de aproveitamento.`;
+  document.getElementById('r-c').textContent=correct;
+  document.getElementById('r-w').textContent=total-correct;
+  document.getElementById('r-t').textContent=total;
+
+  [['easy','bf-e','bp-e'],['med','bf-m','bp-m'],['hard','bf-h','bp-h']].forEach(([d,bId,pId])=>{
+    const qs=pool.filter(q=>q.diff===d);
+    if(!qs.length){document.getElementById(pId).textContent='—';return;}
+    const c=qs.filter(q=>answers[pool.indexOf(q)]===q.correct).length;
+    const p=Math.round(c/qs.length*100);
+    setTimeout(()=>{ document.getElementById(bId).style.width=p+'%'; },150);
+    document.getElementById(pId).textContent=p+'%';
+  });
+
+  const topics=[...new Set(pool.map(q=>q.topic))];
+  document.getElementById('topic-bars').innerHTML=topics.map(topic=>{
+    const qs=pool.filter(q=>q.topic===topic);
+    const c=qs.filter(q=>answers[pool.indexOf(q)]===q.correct).length;
+    const p=Math.round(c/qs.length*100);
+    const color=p>=80?'var(--easy)':p>=60?'var(--med)':'var(--hard)';
+    const warn=p<60?`<span class="warn">⚠ Revisar (${p}%)</span>`:`<span style="font-size:12px;color:var(--muted)">${p}%</span>`;
+    return `<div class="topic-row">
+      <div class="topic-name"><span>${topic}</span>${warn}</div>
+      <div class="bar-t"><div class="bar-f topic-f" data-p="${p}" style="width:0%;background:${color}"></div></div>
+    </div>`;
+  }).join('');
+  setTimeout(()=>{
+    document.querySelectorAll('.topic-f').forEach(el=>{ el.style.width=el.dataset.p+'%'; });
+  },200);
+
+  const wrongs=pool.map((q,i)=>({q,i,chosen:answers[i]})).filter(({q,i})=>answers[i]!==q.correct);
+  const rl=document.getElementById('review-list');
+  if(!wrongs.length){
+    rl.innerHTML=`<div class="empty-rev">🎉 Nenhum erro! Desempenho perfeito.</div>`;
+  } else {
+    rl.innerHTML=wrongs.map(({q,i,chosen})=>`
+      <div class="rev-card">
+        <div class="rev-q">${i+1}. ${q.text}</div>
+        ${chosen!==null?`<div class="rv bad"><span class="lbl">Sua resposta:</span> ${q.vf?(chosen===0?'Verdadeiro':'Falso'):q.opts[chosen]}</div>`:''}
+        <div class="rv ok"><span class="lbl">Resposta correta:</span> ${q.vf?(q.correct===0?'Verdadeiro':'Falso'):q.opts[q.correct]}</div>
+        <div class="rv-exp">💡 ${q.exp}</div>
+      </div>`).join('');
+  }
+
+  rs.scrollIntoView({behavior:'smooth'});
+  prog();
+}
+
+// ────────────────────────────────────────────
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+</script>
+</body>
+</html>
